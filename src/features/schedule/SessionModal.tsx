@@ -214,14 +214,17 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
             value={selectedStudents}
             onChange={(_, v) => setSelectedStudents(v)}
             renderTags={(value, getTagProps) =>
-              value.map((s, i) => (
-                <Chip
-                  key={s.id}
-                  label={`${s.firstName} ${s.lastName}`}
-                  size="small"
-                  {...getTagProps({ index: i })}
-                />
-              ))
+              value.map((s, i) => {
+                const { key, ...tagProps } = getTagProps({ index: i });
+                return (
+                  <Chip
+                    key={key}
+                    label={`${s.firstName} ${s.lastName}`}
+                    size="small"
+                    {...tagProps}
+                  />
+                );
+              })
             }
             renderInput={(params) => (
               <TextField {...params} label={t('schedule.students')} />

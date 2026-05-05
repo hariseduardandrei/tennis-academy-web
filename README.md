@@ -8,24 +8,37 @@ Built with: **Next.js 14 (App Router) + TypeScript + MUI v5 + dayjs**
 
 ## Prerequisites
 
-- Node.js ≥ 20
+- Node.js >= 20
 - Backend running at `http://localhost:8080` (see `backend/`)
+
+### Install Node.js on Windows (winget)
+
+```powershell
+winget install --id OpenJS.NodeJS.20 --source winget --accept-source-agreements --accept-package-agreements --scope user --silent
+```
+
+After install, open a new terminal and verify:
+
+```powershell
+node -v
+npm -v
+```
 
 ---
 
 ## Local Setup
 
-```bash
+```powershell
 # 1. Install dependencies
 npm install
 
 # 2. Copy env file
-cp .env.example .env.local
+Copy-Item .env.example .env.local
 # Edit .env.local if needed (default points to http://localhost:8080)
 
 # 3. Start dev server
 npm run dev
-# → http://localhost:3000
+# -> http://localhost:3000
 ```
 
 ---
