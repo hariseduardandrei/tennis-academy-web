@@ -36,12 +36,16 @@ export default function UsersPage() {
   const { t } = useI18n();
   const { showSuccess, showError } = useSnackbar();
 
+  const getRoleLabel = (role: 'ADMIN' | 'COACH' | 'TRAINER') => t(`users.staff.role.${role}` as const);
+
   const [users, setUsers] = useState<StaffUserDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [listUnavailable, setListUnavailable] = useState(false);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createPayload, setCreatePayload] = useState<CreateStaffUserRequest>({
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     role: 'COACH',
@@ -51,6 +55,8 @@ export default function UsersPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<StaffUserDto | null>(null);
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
   const [editRole, setEditRole] = useState<'ADMIN' | 'COACH' | 'TRAINER'>('COACH');
   const [editLanguage, setEditLanguage] = useState<'ro' | 'en'>('ro');
   const [updating, setUpdating] = useState(false);
@@ -83,7 +89,7 @@ export default function UsersPage() {
       await usersApi.createStaff(createPayload);
       showSuccess(t('users.staff.created'));
       setCreateOpen(false);
-      setCreatePayload({ email: '', password: '', role: 'COACH', language: 'ro' });
+      setCreatePayload({ firstName: '', lastName: '', email: '', password: '', role: 'COACH', language: 'ro' });
       await loadUsers();
     } catch {
       showError(t('common.error'));
@@ -94,6 +100,8 @@ export default function UsersPage() {
 
   const openEditDialog = (u: StaffUserDto) => {
     setEditingUser(u);
+    setEditFirstName(u.firstName ?? '');
+    setEditLastName(u.lastName ?? '');
     setEditRole(u.role);
     setEditLanguage((u.language?.toLowerCase() === 'en' ? 'en' : 'ro') as 'ro' | 'en');
     setEditOpen(true);
@@ -103,7 +111,12 @@ export default function UsersPage() {
     if (!editingUser) return;
     setUpdating(true);
     try {
-      await usersApi.patchStaff(editingUser.id, { role: editRole, language: editLanguage });
+      await usersApi.patchStaff(editingUser.id, {
+        firstName: editFirstName,
+        lastName: editLastName,
+        role: editRole,
+        language: editLanguage,
+      });
       showSuccess(t('users.staff.updated'));
       setEditOpen(false);
       setEditingUser(null);
@@ -143,6 +156,8 @@ export default function UsersPage() {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>{t('users.staff.firstName')}</TableCell>
+                <TableCell>{t('users.staff.lastName')}</TableCell>
                 <TableCell>{t('auth.email')}</TableCell>
                 <TableCell>{t('users.staff.role')}</TableCell>
                 <TableCell>{t('nav.language')}</TableCell>
@@ -152,9 +167,11 @@ export default function UsersPage() {
             <TableBody>
               {users.map((u) => (
                 <TableRow key={u.id} hover>
+                  <TableCell>{u.firstName ?? '-'}</TableCell>
+                  <TableCell>{u.lastName ?? '-'}</TableCell>
                   <TableCell>{u.email}</TableCell>
                   <TableCell>
-                    <Chip label={u.role} size="small" color={u.role === 'ADMIN' ? 'secondary' : 'primary'} />
+                    <Chip label={getRoleLabel(u.role)} size="small" color={u.role === 'ADMIN' ? 'secondary' : 'primary'} />
                   </TableCell>
                   <TableCell>{(u.language ?? 'ro').toUpperCase()}</TableCell>
                   <TableCell align="right">
@@ -173,6 +190,20 @@ export default function UsersPage() {
         <DialogTitle>{t('users.staff.add')}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField
+              label={t('users.staff.firstName')}
+              value={createPayload.firstName}
+              onChange={(e) => setCreatePayload((p) => ({ ...p, firstName: e.target.value }))}
+              required
+              fullWidth
+            />
+            <TextField
+              label={t('users.staff.lastName')}
+              value={createPayload.lastName}
+              onChange={(e) => setCreatePayload((p) => ({ ...p, lastName: e.target.value }))}
+              required
+              fullWidth
+            />
             <TextField
               label={t('auth.email')}
               type="email"
@@ -197,7 +228,7 @@ export default function UsersPage() {
               fullWidth
             >
               {ROLES.map((role) => (
-                <MenuItem key={role} value={role}>{role}</MenuItem>
+                <MenuItem key={role} value={role}>{getRoleLabel(role)}</MenuItem>
               ))}
             </TextField>
             <TextField
@@ -218,7 +249,7 @@ export default function UsersPage() {
           <Button
             variant="contained"
             onClick={handleCreate}
-            disabled={creating || !createPayload.email || !createPayload.password}
+            disabled={creating || !createPayload.firstName.trim() || !createPayload.lastName.trim() || !createPayload.email || !createPayload.password}
           >
             {t('common.save')}
           </Button>
@@ -229,10 +260,12 @@ export default function UsersPage() {
         <DialogTitle>{t('common.edit')}</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+            <TextField label={t('users.staff.firstName')} value={editFirstName} onChange={(e) => setEditFirstName(e.target.value)} required fullWidth />
+            <TextField label={t('users.staff.lastName')} value={editLastName} onChange={(e) => setEditLastName(e.target.value)} required fullWidth />
             <TextField label={t('auth.email')} value={editingUser?.email ?? ''} disabled fullWidth />
             <TextField select label={t('users.staff.role')} value={editRole} onChange={(e) => setEditRole(e.target.value as 'ADMIN' | 'COACH' | 'TRAINER')} fullWidth>
               {ROLES.map((role) => (
-                <MenuItem key={role} value={role}>{role}</MenuItem>
+                <MenuItem key={role} value={role}>{getRoleLabel(role)}</MenuItem>
               ))}
             </TextField>
             <TextField select label={t('nav.language')} value={editLanguage} onChange={(e) => setEditLanguage(e.target.value as 'ro' | 'en')} fullWidth>
@@ -244,7 +277,7 @@ export default function UsersPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditOpen(false)}>{t('common.cancel')}</Button>
-          <Button variant="contained" onClick={handlePatch} disabled={updating}>
+          <Button variant="contained" onClick={handlePatch} disabled={updating || !editFirstName.trim() || !editLastName.trim()}>
             {t('common.save')}
           </Button>
         </DialogActions>

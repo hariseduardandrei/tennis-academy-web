@@ -122,7 +122,12 @@ const en: Record<TranslationKey, string> = {
   // Staff users
   'users.staff.title': 'Staff (coaches/admins)',
   'users.staff.add': 'Add staff user',
+  'users.staff.firstName': 'First name',
+  'users.staff.lastName': 'Last name',
   'users.staff.role': 'Role',
+  'users.staff.role.ADMIN': 'Admin',
+  'users.staff.role.COACH': 'Coach',
+  'users.staff.role.TRAINER': 'Fitness trainer',
   'users.staff.created': 'Staff account created.',
   'users.staff.updated': 'Staff account updated.',
   'users.staff.listNotAvailable': 'Staff listing is not available from backend yet.',

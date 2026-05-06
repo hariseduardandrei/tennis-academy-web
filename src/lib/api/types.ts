@@ -11,6 +11,8 @@ export interface LoginResponse {
 
 export interface MeResponse {
   id: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   role: 'ADMIN' | 'COACH' | 'TRAINER' | 'STUDENT';
   language: string;
@@ -211,12 +213,16 @@ export interface MyHistoryResponse {
 // Staff users
 export interface StaffUserDto {
   id: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   role: 'ADMIN' | 'COACH' | 'TRAINER';
   language?: string;
 }
 
 export interface CreateStaffUserRequest {
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   role: 'ADMIN' | 'COACH' | 'TRAINER';
@@ -224,6 +230,8 @@ export interface CreateStaffUserRequest {
 }
 
 export interface PatchStaffUserRequest {
+  firstName?: string;
+  lastName?: string;
   role?: 'ADMIN' | 'COACH' | 'TRAINER';
   language?: 'ro' | 'en';
 }

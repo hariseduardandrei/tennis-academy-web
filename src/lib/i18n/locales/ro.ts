@@ -120,7 +120,12 @@ const ro = {
   // Staff users
   'users.staff.title': 'Personal (antrenori/admini)',
   'users.staff.add': 'Adaugă personal',
+  'users.staff.firstName': 'Prenume',
+  'users.staff.lastName': 'Nume',
   'users.staff.role': 'Rol',
+  'users.staff.role.ADMIN': 'Admin',
+  'users.staff.role.COACH': 'Coach',
+  'users.staff.role.TRAINER': 'Fitness trainer',
   'users.staff.created': 'Contul de personal a fost creat.',
   'users.staff.updated': 'Contul de personal a fost actualizat.',
   'users.staff.listNotAvailable': 'Listarea personalului nu este disponibilă încă din backend.',

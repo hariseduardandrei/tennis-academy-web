@@ -1,6 +1,10 @@
 import { apiClient } from './client';
 import type { CreateStaffUserRequest, PatchStaffUserRequest, StaffUserDto } from './types';
 
+function toApiLanguage(language: 'ro' | 'en'): 'RO' | 'EN' {
+  return language.toUpperCase() as 'RO' | 'EN';
+}
+
 function normalizeStaffList(payload: unknown): StaffUserDto[] {
   if (Array.isArray(payload)) return payload as StaffUserDto[];
   if (!payload || typeof payload !== 'object') return [];
@@ -19,8 +23,15 @@ export const usersApi = {
     return normalizeStaffList(payload);
   },
 
-  createStaff: (req: CreateStaffUserRequest) => apiClient.post<StaffUserDto>('/users', req),
+  createStaff: (req: CreateStaffUserRequest) =>
+    apiClient.post<StaffUserDto>('/users', {
+      ...req,
+      language: toApiLanguage(req.language),
+    }),
 
   patchStaff: (id: string, req: PatchStaffUserRequest) =>
-    apiClient.patch<StaffUserDto>(`/users/${id}`, req),
+    apiClient.patch<StaffUserDto>(`/users/${id}`, {
+      ...req,
+      ...(req.language ? { language: toApiLanguage(req.language) } : {}),
+    }),
 };
