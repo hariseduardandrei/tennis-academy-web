@@ -13,6 +13,9 @@ import Alert from '@mui/material/Alert';
 import Autocomplete from '@mui/material/Autocomplete';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import Paper from '@mui/material/Paper';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -183,28 +186,39 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {session ? t('schedule.editSession') : t('schedule.createSession')}
+        <Typography variant="h4">{session ? t('schedule.editSession') : t('schedule.createSession')}</Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {t('schedule.modalDescription')}
+        </Typography>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.25, pt: 1.5 }}>
           {error && <Alert severity="error">{error}</Alert>}
 
-          <TextField
-            label={t('schedule.startAt')}
-            type="datetime-local"
-            value={startAt}
-            onChange={(e) => setStartAt(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-          />
-          <TextField
-            label={t('schedule.endAt')}
-            type="datetime-local"
-            value={endAt}
-            onChange={(e) => setEndAt(e.target.value)}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
-          />
+          <Paper sx={{ p: 2, borderRadius: 4 }}>
+            <Typography variant="caption" sx={{ display: 'block', mb: 1, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              {t('schedule.timing')}
+            </Typography>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2 }}>
+              <TextField
+                label={t('schedule.startAt')}
+                type="datetime-local"
+                value={startAt}
+                onChange={(e) => setStartAt(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+              <TextField
+                label={t('schedule.endAt')}
+                type="datetime-local"
+                value={endAt}
+                onChange={(e) => setEndAt(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+            </Box>
+          </Paper>
+
           <TextField
             select
             label={t('schedule.court')}
@@ -235,8 +249,9 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
             }}
             noOptionsText={t('schedule.staffNoResults')}
             renderOption={(props, option) => (
-              <Box component="li" {...props} key={option.id}>
-                {getStaffLabel(option)}
+              <Box component="li" {...props} key={option.id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start !important', py: 1 }}>
+                <Typography variant="body2" fontWeight={700}>{getStaffLabel(option)}</Typography>
+                <Typography variant="caption" color="text.secondary">{option.email}</Typography>
               </Box>
             )}
             renderInput={(params) => (
@@ -271,12 +286,19 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
             placeholder={t('common.optional')}
           />
 
+          <Divider flexItem />
+
           <Autocomplete
             multiple
             options={students}
             getOptionLabel={(s) => `${s.firstName} ${s.lastName}`}
             value={selectedStudents}
             onChange={(_, v) => setSelectedStudents(v)}
+            renderOption={(props, option) => (
+              <Box component="li" {...props} key={option.id} sx={{ py: 1 }}>
+                <Typography variant="body2" fontWeight={700}>{option.firstName} {option.lastName}</Typography>
+              </Box>
+            )}
             renderTags={(value, getTagProps) =>
               value.map((s, i) => {
                 const { key, ...tagProps } = getTagProps({ index: i });
@@ -285,13 +307,15 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
                     key={key}
                     label={`${s.firstName} ${s.lastName}`}
                     size="small"
+                    color="primary"
+                    variant="outlined"
                     {...tagProps}
                   />
                 );
               })
             }
             renderInput={(params) => (
-              <TextField {...params} label={t('schedule.students')} />
+              <TextField {...params} label={t('schedule.students')} placeholder={t('schedule.addStudents')} />
             )}
           />
         </Box>

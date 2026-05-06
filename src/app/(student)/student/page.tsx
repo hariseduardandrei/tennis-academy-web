@@ -8,11 +8,17 @@ import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
+import Button from '@mui/material/Button';
+import { alpha } from '@mui/material/styles';
+import EventBusyRoundedIcon from '@mui/icons-material/EventBusyRounded';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { portalApi } from '@/lib/api/portal';
 import { useI18n } from '@/lib/i18n';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { fadeUpIn, motion } from '@/lib/ui/motion';
 import type { MyScheduleSessionResponse } from '@/lib/api/types';
 
 dayjs.extend(utc);
@@ -41,25 +47,32 @@ export default function StudentHomePage() {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>
-        {t('portal.title')}
-      </Typography>
-
-      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-        {t('portal.upcoming')}
-      </Typography>
+      <PageHeader
+        eyebrow={t('portal.header.eyebrow')}
+        title={t('portal.title')}
+        description={t('portal.header.description')}
+        actions={<Chip label={t('portal.upcoming')} color="primary" variant="outlined" />}
+      />
 
       {loading ? (
-        <Skeleton variant="rounded" height={200} />
+        <Skeleton variant="rounded" height={240} />
       ) : upcoming.length === 0 ? (
-        <Typography color="text.secondary">{t('portal.noUpcoming')}</Typography>
+        <EmptyState title={t('portal.noUpcoming')} description={t('portal.emptyUpcomingDescription')} icon={<EventBusyRoundedIcon color="primary" />} />
       ) : (
-        upcoming.map((sess) => (
-          <Card key={sess.sessionId} sx={{ mb: 2 }}>
+        upcoming.map((sess, idx) => (
+          <Card
+            key={sess.sessionId}
+            sx={{
+              mb: 2,
+              background: (theme) =>
+                `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.09 : 0.04)} 100%)`,
+              ...fadeUpIn(idx * motion.stagger.tight),
+            }}
+          >
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Box>
-                  <Typography variant="subtitle1" fontWeight={700}>
+                  <Typography variant="h6" fontWeight={700}>
                     {dayjs(sess.startAt).tz(TZ).format('dddd, D MMM · HH:mm')}–
                     {dayjs(sess.endAt).tz(TZ).format('HH:mm')}
                   </Typography>
@@ -68,7 +81,7 @@ export default function StudentHomePage() {
                     {t('portal.court')}: {sess.courtName} · {t('portal.coach')}: {sess.staffName}
                   </Typography>
                 </Box>
-                <Chip label={sess.sessionType} size="small" />
+                <Chip label={sess.sessionType} size="small" color="primary" variant="outlined" />
               </Box>
             </CardContent>
           </Card>

@@ -12,6 +12,7 @@ const en: Record<TranslationKey, string> = {
   'common.search': 'Search',
   'common.filter': 'Filter',
   'common.confirm': 'Confirm',
+  'common.retry': 'Try again',
   'common.back': 'Back',
   'common.actions': 'Actions',
   'common.noData': 'No data available.',
@@ -24,6 +25,20 @@ const en: Record<TranslationKey, string> = {
   'common.required': 'Required field',
   'common.optional': 'optional',
   'common.close': 'Close',
+
+  // Layout
+  'layout.tagline': 'Premium academy operations suite',
+  'layout.workspace': 'Workspace',
+  'layout.designMode': 'Display mode',
+  'layout.header.staffTitle': 'Control center',
+  'layout.header.studentTitle': 'Student portal',
+  'layout.header.staffSubtitle': 'Scheduling, students, sessions and academy operations',
+  'layout.header.studentSubtitle': 'Your schedule, training history and performance overview',
+  'layout.signedInAs': 'Signed in as',
+  'layout.mode.darkDescription': 'Dark interface for late-night planning',
+  'layout.mode.lightDescription': 'Light interface for focused daily operations',
+  'layout.mode.lightAction': '☀️ Light mode',
+  'layout.mode.darkAction': '🌙 Dark mode',
 
   // Navigation
   'nav.today': 'Today',
@@ -48,6 +63,18 @@ const en: Record<TranslationKey, string> = {
   'auth.loggingIn': 'Signing in...',
   'auth.logout': 'Logout',
   'auth.welcome': 'Welcome to Tennis Academy',
+  'auth.guard.title': 'Preparing your workspace',
+  'auth.guard.description': 'Loading account, permissions and navigation.',
+
+  // Login premium
+  'login.premiumBadge': 'Premium academy operations',
+  'login.heroTitle': 'Elegant control for every court, coach and student.',
+  'login.heroDescription': 'A refined operations workspace for scheduling, session completion, performance tracking and student communication.',
+  'login.feature.schedule': 'Court-first scheduling with conflict feedback',
+  'login.feature.completion': 'Fast completion flow for coaches and fitness trainers',
+  'login.feature.portal': 'Student portal with schedule and training history',
+  'login.signInEyebrow': 'Sign in',
+  'login.signInDescription': 'Continue into your academy workspace with the same secure account used on web and mobile.',
 
   // Today
   'today.title': 'Today',
@@ -55,6 +82,13 @@ const en: Record<TranslationKey, string> = {
   'today.court': 'Court',
   'today.complete': 'Complete',
   'today.view': 'View',
+  'today.header.eyebrowLoading': 'Daily overview',
+  'today.header.descriptionLoading': 'Court-level visibility for the current day with immediate access to session completion.',
+  'today.header.eyebrow': 'Live operations',
+  'today.header.description': 'Stay on top of every court today with quick actions for completion and a clear visual view of the schedule.',
+  'today.sessionsCount': '{count} sessions',
+  'today.emptyCourtDescription': 'This court has no scheduled sessions for today.',
+  'today.loadError': 'We could not load today\'s schedule. Please try again.',
 
   // Schedule
   'schedule.title': 'Weekly Schedule',
@@ -85,6 +119,11 @@ const en: Record<TranslationKey, string> = {
   'schedule.type.TENNIS': 'Tennis',
   'schedule.type.FITNESS': 'Fitness',
   'schedule.type.MATCHPLAY': 'Match Play',
+  'schedule.header.eyebrow': 'Schedule intelligence',
+  'schedule.header.description': 'A court-first weekly command view with polished session editing, student assignment and clear conflict handling.',
+  'schedule.emptyDayDescription': 'Use the create action to add the first booking for this day.',
+  'schedule.modalDescription': 'Configure timing, court, coach and students in one polished scheduling flow.',
+  'schedule.timing': 'Timing',
 
   // Session Completion
   'complete.title': 'Complete session',
@@ -99,6 +138,10 @@ const en: Record<TranslationKey, string> = {
   'complete.late': 'Late',
   'complete.absent': 'Absent',
   'complete.noStudents': 'No students enrolled.',
+  'complete.staffOnly': 'Visible to staff only',
+  'complete.header.eyebrow': 'Session closeout',
+  'complete.header.description': 'Quickly update attendance, intensity and notes for every student in the session.',
+  'complete.emptyDescription': 'This session does not have any assigned students yet.',
 
   // Students
   'students.title': 'Students',
@@ -122,10 +165,19 @@ const en: Record<TranslationKey, string> = {
   'students.membership': 'Membership',
   'students.load': 'Training load',
   'students.notes': 'Notes',
+  'students.header.eyebrow': 'Student management',
+  'students.header.description': 'Search, filter and create student profiles in a clear and high-speed workspace.',
+  'students.emptyDescription': 'Adjust filters or add your first student to get started.',
+  'students.profile.eyebrow': 'Student profile',
+  'students.profile.description': 'Edit identity details, status and operational notes for this student.',
+  'students.passwordOnceHint': 'Copy the password now — it will not be shown again.',
 
   // Staff users
   'users.staff.title': 'Staff (coaches/admins)',
   'users.staff.add': 'Add staff user',
+  'users.staff.header.eyebrow': 'Staff management',
+  'users.staff.header.description': 'Manage team accounts, roles and language preferences from one premium workspace.',
+  'users.staff.emptyDescription': 'No staff accounts are listed yet. Add the first team member to get started.',
   'users.staff.firstName': 'First name',
   'users.staff.lastName': 'Last name',
   'users.staff.role': 'Role',
@@ -156,6 +208,9 @@ const en: Record<TranslationKey, string> = {
   'billing.saved': 'Membership updated.',
   'billing.overdueTitle': 'Students with overdue payments',
   'billing.amount_label': 'Amount (RON)',
+  'billing.header.eyebrow': 'Financial operations',
+  'billing.header.description': 'Track monthly membership status quickly and resolve overdue balances from a clear admin interface.',
+  'billing.emptyDescription': 'There are no billing records for the selected month and year.',
 
   // Student portal
   'portal.title': 'My Portal',
@@ -171,6 +226,17 @@ const en: Record<TranslationKey, string> = {
   'portal.load': 'Training load',
   'portal.attendance': 'Attendance',
   'portal.mySchedule': 'My schedule',
+  'portal.header.eyebrow': 'Personal overview',
+  'portal.header.description': 'See your next sessions and the most important information about your training at a glance.',
+  'portal.emptyUpcomingDescription': 'You have no upcoming sessions in the near future.',
+  'portal.schedule.eyebrow': 'Weekly plan',
+  'portal.schedule.description': 'Move through the week quickly and see each session grouped cleanly by day.',
+  'portal.schedule.emptyDayDescription': 'You have no sessions scheduled on this day.',
+  'portal.history.eyebrow': 'Personal history',
+  'portal.history.description': 'Review attendance, RPE, load and the notes visible to you.',
+  'portal.history.emptyDescription': 'Your history will appear here after sessions are completed.',
+  'portal.history.loadError': 'We could not load your history right now. Please try again.',
+  'portal.history.loadMore': 'Load more',
 };
 
 export default en;

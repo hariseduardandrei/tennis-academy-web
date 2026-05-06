@@ -53,10 +53,21 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
         open={open}
         autoHideDuration={4000}
         onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         key={current?.key}
+        sx={{ bottom: { xs: 16, md: 24 }, right: { xs: 16, md: 24 } }}
       >
-        <Alert onClose={handleClose} severity={current?.severity ?? 'info'} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleClose}
+          severity={current?.severity ?? 'info'}
+          variant="filled"
+          sx={{
+            width: '100%',
+            minWidth: 280,
+            boxShadow: (theme) => theme.shadows[5],
+            backdropFilter: 'blur(16px)',
+          }}
+        >
           {current?.message}
         </Alert>
       </Snackbar>

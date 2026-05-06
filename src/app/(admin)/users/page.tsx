@@ -23,10 +23,14 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
+import SupervisorAccountRoundedIcon from '@mui/icons-material/SupervisorAccountRounded';
 import { ApiError } from '@/lib/api/client';
 import { usersApi } from '@/lib/api/users';
 import { useI18n } from '@/lib/i18n';
 import { useSnackbar } from '@/components/SnackbarProvider';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { fadeUpIn, motion } from '@/lib/ui/motion';
 import type { CreateStaffUserRequest, StaffUserDto } from '@/lib/api/types';
 
 const ROLES: Array<'ADMIN' | 'COACH' | 'TRAINER'> = ['ADMIN', 'COACH', 'TRAINER'];
@@ -134,12 +138,16 @@ export default function UsersPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <Typography variant="h5">{t('users.staff.title')}</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} sx={{ ml: 'auto' }} onClick={() => setCreateOpen(true)}>
-          {t('users.staff.add')}
-        </Button>
-      </Box>
+      <PageHeader
+        eyebrow={t('users.staff.header.eyebrow')}
+        title={t('users.staff.title')}
+        description={t('users.staff.header.description')}
+        actions={
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
+            {t('users.staff.add')}
+          </Button>
+        }
+      />
 
       {listUnavailable && (
         <Alert severity="info" sx={{ mb: 2 }}>
@@ -148,9 +156,9 @@ export default function UsersPage() {
       )}
 
       {loading ? (
-        <Skeleton variant="rounded" height={280} />
+        <Skeleton variant="rounded" height={320} />
       ) : users.length === 0 ? (
-        <Typography color="text.secondary">{t('common.noData')}</Typography>
+        <EmptyState title={t('common.noData')} description={t('users.staff.emptyDescription')} icon={<SupervisorAccountRoundedIcon color="primary" />} />
       ) : (
         <TableContainer component={Paper}>
           <Table>
@@ -165,8 +173,8 @@ export default function UsersPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {users.map((u) => (
-                <TableRow key={u.id} hover>
+              {users.map((u, idx) => (
+                <TableRow key={u.id} hover sx={fadeUpIn(idx * motion.stagger.tight)}>
                   <TableCell>{u.firstName ?? '-'}</TableCell>
                   <TableCell>{u.lastName ?? '-'}</TableCell>
                   <TableCell>{u.email}</TableCell>

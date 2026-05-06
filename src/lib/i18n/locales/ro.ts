@@ -10,6 +10,7 @@ const ro = {
   'common.search': 'Caută',
   'common.filter': 'Filtrează',
   'common.confirm': 'Confirmă',
+  'common.retry': 'Încearcă din nou',
   'common.back': 'Înapoi',
   'common.actions': 'Acțiuni',
   'common.noData': 'Nu există date disponibile.',
@@ -22,6 +23,20 @@ const ro = {
   'common.required': 'Câmp obligatoriu',
   'common.optional': 'opțional',
   'common.close': 'Închide',
+
+  // Layout
+  'layout.tagline': 'Suită premium pentru operațiunile academiei',
+  'layout.workspace': 'Spațiu de lucru',
+  'layout.designMode': 'Mod de afișare',
+  'layout.header.staffTitle': 'Centru de control',
+  'layout.header.studentTitle': 'Portal student',
+  'layout.header.staffSubtitle': 'Programări, studenți, sesiuni și operațiunile academiei',
+  'layout.header.studentSubtitle': 'Programul tău, istoricul antrenamentelor și progresul tău',
+  'layout.signedInAs': 'Autentificat ca',
+  'layout.mode.darkDescription': 'Interfață întunecată pentru planificare seara târziu',
+  'layout.mode.lightDescription': 'Interfață luminoasă pentru operațiunile de zi cu zi',
+  'layout.mode.lightAction': '☀️ Mod luminos',
+  'layout.mode.darkAction': '🌙 Mod întunecat',
 
   // Navigation
   'nav.today': 'Azi',
@@ -46,6 +61,18 @@ const ro = {
   'auth.loggingIn': 'Se autentifică...',
   'auth.logout': 'Deconectare',
   'auth.welcome': 'Bun venit la Academia de Tenis',
+  'auth.guard.title': 'Pregătim spațiul tău de lucru',
+  'auth.guard.description': 'Se încarcă contul, permisiunile și navigația.',
+
+  // Login premium
+  'login.premiumBadge': 'Operațiuni premium pentru academie',
+  'login.heroTitle': 'Control elegant pentru fiecare teren, antrenor și student.',
+  'login.heroDescription': 'Un spațiu de lucru rafinat pentru programări, completarea sesiunilor, urmărirea performanței și comunicarea cu studenții.',
+  'login.feature.schedule': 'Programare orientată pe teren cu feedback pentru conflicte',
+  'login.feature.completion': 'Flux rapid de completare pentru coach și fitness trainer',
+  'login.feature.portal': 'Portal student cu program și istoric de antrenament',
+  'login.signInEyebrow': 'Autentificare',
+  'login.signInDescription': 'Continuă în spațiul academiei cu același cont securizat folosit pe web și mobil.',
 
   // Today
   'today.title': 'Azi',
@@ -53,6 +80,13 @@ const ro = {
   'today.court': 'Teren',
   'today.complete': 'Completează',
   'today.view': 'Vezi',
+  'today.header.eyebrowLoading': 'Privire de ansamblu zilnică',
+  'today.header.descriptionLoading': 'Vizibilitate pe terenuri pentru ziua curentă cu acces imediat la completarea sesiunilor.',
+  'today.header.eyebrow': 'Operațiuni live',
+  'today.header.description': 'Vezi rapid toate terenurile de azi și deschide imediat fluxul de completare pentru orice sesiune.',
+  'today.sessionsCount': '{count} sesiuni',
+  'today.emptyCourtDescription': 'Acest teren nu are sesiuni programate pentru astăzi.',
+  'today.loadError': 'Nu am putut încărca programul de azi. Încearcă din nou.',
 
   // Schedule
   'schedule.title': 'Program săptămânal',
@@ -83,6 +117,11 @@ const ro = {
   'schedule.type.TENNIS': 'Tenis',
   'schedule.type.FITNESS': 'Fitness',
   'schedule.type.MATCHPLAY': 'Meci',
+  'schedule.header.eyebrow': 'Inteligență de programare',
+  'schedule.header.description': 'O vedere săptămânală orientată pe teren, cu editare elegantă a sesiunilor, asignare de studenți și mesaje clare pentru conflicte.',
+  'schedule.emptyDayDescription': 'Folosește acțiunea de creare pentru a adăuga prima sesiune din această zi.',
+  'schedule.modalDescription': 'Configurează intervalul, terenul, antrenorul și studenții într-un flux de programare rafinat.',
+  'schedule.timing': 'Programare orară',
 
   // Session Completion
   'complete.title': 'Completare sesiune',
@@ -97,6 +136,10 @@ const ro = {
   'complete.late': 'Întârziat',
   'complete.absent': 'Absent',
   'complete.noStudents': 'Nu există studenți înscriși.',
+  'complete.staffOnly': 'Vizibil doar pentru personal',
+  'complete.header.eyebrow': 'Închidere sesiune',
+  'complete.header.description': 'Actualizează rapid prezența, intensitatea și notele pentru fiecare student din sesiune.',
+  'complete.emptyDescription': 'Sesiunea nu are încă studenți repartizați pentru completare.',
 
   // Students
   'students.title': 'Studenți',
@@ -120,10 +163,19 @@ const ro = {
   'students.membership': 'Abonament',
   'students.load': 'Încărcare',
   'students.notes': 'Note',
+  'students.header.eyebrow': 'Administrare studenți',
+  'students.header.description': 'Caută, filtrează și creează profiluri de studenți într-un spațiu clar și rapid.',
+  'students.emptyDescription': 'Ajustează filtrele sau adaugă primul student pentru a începe.',
+  'students.profile.eyebrow': 'Profil student',
+  'students.profile.description': 'Editează informațiile de bază, statusul și notele operaționale ale studentului.',
+  'students.passwordOnceHint': 'Copiază parola acum — nu va mai fi afișată.',
 
   // Staff users
   'users.staff.title': 'Personal (antrenori/admini)',
   'users.staff.add': 'Adaugă personal',
+  'users.staff.header.eyebrow': 'Administrare personal',
+  'users.staff.header.description': 'Gestionează conturile echipei, rolurile și preferințele lingvistice dintr-un singur loc.',
+  'users.staff.emptyDescription': 'Nu există încă membri în listă. Adaugă primul cont de personal pentru academie.',
   'users.staff.firstName': 'Prenume',
   'users.staff.lastName': 'Nume',
   'users.staff.role': 'Rol',
@@ -154,6 +206,9 @@ const ro = {
   'billing.saved': 'Abonamentul a fost actualizat.',
   'billing.overdueTitle': 'Studenți cu plată restantă',
   'billing.amount_label': 'Sumă (RON)',
+  'billing.header.eyebrow': 'Operațiuni financiare',
+  'billing.header.description': 'Urmărește rapid statutul abonamentelor lunare și rezolvă restanțele dintr-o interfață clară.',
+  'billing.emptyDescription': 'Nu există înregistrări pentru selecția curentă de lună și an.',
 
   // Student portal
   'portal.title': 'Portalul meu',
@@ -169,6 +224,17 @@ const ro = {
   'portal.load': 'Încărcare antrenament',
   'portal.attendance': 'Prezență',
   'portal.mySchedule': 'Programul meu',
+  'portal.header.eyebrow': 'Privire personală',
+  'portal.header.description': 'Vezi dintr-o privire următoarele sesiuni și cele mai importante informații despre antrenamentele tale.',
+  'portal.emptyUpcomingDescription': 'Nu ai sesiuni viitoare în perioada următoare.',
+  'portal.schedule.eyebrow': 'Planul săptămânii',
+  'portal.schedule.description': 'Parcurge rapid săptămâna și vezi fiecare sesiune grupată clar pe zile.',
+  'portal.schedule.emptyDayDescription': 'Nu ai sesiuni programate în această zi.',
+  'portal.history.eyebrow': 'Istoric personal',
+  'portal.history.description': 'Revizuiește prezența, RPE, load-ul și notele vizibile pentru tine.',
+  'portal.history.emptyDescription': 'Istoricul tău va apărea aici după finalizarea sesiunilor.',
+  'portal.history.loadError': 'Nu am putut încărca istoricul acum. Încearcă din nou.',
+  'portal.history.loadMore': 'Vezi mai mult',
 } as const;
 
 export type TranslationKey = keyof typeof ro;

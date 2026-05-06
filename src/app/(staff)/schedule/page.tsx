@@ -20,6 +20,9 @@ import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CalendarTodayRoundedIcon from '@mui/icons-material/CalendarTodayRounded';
+import EventBusyRoundedIcon from '@mui/icons-material/EventBusyRounded';
+import { alpha } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -29,6 +32,8 @@ import { sessionsApi } from '@/lib/api/sessions';
 import { courtsApi } from '@/lib/api/courts';
 import { useI18n } from '@/lib/i18n';
 import { useSnackbar } from '@/components/SnackbarProvider';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
 import { SessionModal } from '@/features/schedule/SessionModal';
 import type { SessionDto, CourtDto } from '@/lib/api/types';
 
@@ -121,10 +126,47 @@ export default function SchedulePage() {
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-        <Typography variant="h5">{t('schedule.title')}</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <PageHeader
+        eyebrow={t('schedule.header.eyebrow')}
+        title={t('schedule.title')}
+        description={t('schedule.header.description')}
+        actions={(
+          <>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                px: 1.25,
+                py: 0.75,
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: 'divider',
+                bgcolor: 'background.paper',
+              }}
+            >
+              <CalendarTodayRoundedIcon fontSize="small" color="primary" />
+              <Typography variant="body2" fontWeight={700}>
+                {weekStart.format('D MMM')} – {weekStart.add(6, 'day').format('D MMM YYYY')}
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => {
+                setEditSession(null);
+                setModalOpen(true);
+              }}
+            >
+              {t('schedule.createSession')}
+            </Button>
+          </>
+        )}
+      />
+
+      <Paper sx={{ p: { xs: 2, md: 2.5 }, mb: 2.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton onClick={() => setWeekStart((w) => w.subtract(1, 'week'))}>
             <ChevronLeftIcon />
           </IconButton>
@@ -140,23 +182,17 @@ export default function SchedulePage() {
           >
             {t('common.today')}
           </Button>
+          </Box>
+          <Box sx={{ ml: 'auto', display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+            {courts.map((court) => (
+              <Chip key={court.id} label={court.name} size="small" variant="outlined" />
+            ))}
+          </Box>
         </Box>
-        <Box sx={{ ml: 'auto' }}>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => {
-              setEditSession(null);
-              setModalOpen(true);
-            }}
-          >
-            {t('schedule.createSession')}
-          </Button>
-        </Box>
-      </Box>
+      </Paper>
 
       {/* Day tabs */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 2, overflowX: 'auto' }}>
+      <Box sx={{ display: 'flex', gap: 1, mb: 2.5, overflowX: 'auto', pb: 0.5 }}>
         {weekDays.map((d) => {
           const isToday = d.format('YYYY-MM-DD') === dayjs().tz(TZ).format('YYYY-MM-DD');
           return (
@@ -166,13 +202,14 @@ export default function SchedulePage() {
               color={isToday ? 'primary' : 'default'}
               variant={isToday ? 'filled' : 'outlined'}
               size="small"
+              sx={{ minWidth: 72 }}
             />
           );
         })}
       </Box>
 
       {loading ? (
-        <Skeleton variant="rounded" height={400} />
+        <Skeleton variant="rounded" height={520} />
       ) : (
         <Box sx={{ overflowX: 'auto' }}>
           {weekDays.map((day) => {
@@ -184,27 +221,27 @@ export default function SchedulePage() {
 
             return (
               <Box key={dayStr} sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1 }}>
-                  {day.format('dddd, D MMMM')}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.25, px: 0.5 }}>
+                  <Typography variant="h6">
+                    {day.format('dddd, D MMMM')}
+                  </Typography>
                   {day.format('YYYY-MM-DD') === dayjs().tz(TZ).format('YYYY-MM-DD') && (
-                    <Chip label={t('common.today')} size="small" color="primary" sx={{ ml: 1 }} />
+                    <Chip label={t('common.today')} size="small" color="primary" />
                   )}
-                </Typography>
+                </Box>
 
                 {!hasSessions ? (
-                  <Typography variant="body2" color="text.secondary" sx={{ pl: 1 }}>
-                    {t('today.noSessions')}
-                  </Typography>
+                  <EmptyState title={t('today.noSessions')} description={t('schedule.emptyDayDescription')} icon={<EventBusyRoundedIcon color="primary" />} />
                 ) : (
-                  <Paper variant="outlined" sx={{ display: 'flex', overflow: 'hidden' }}>
+                  <Paper variant="outlined" sx={{ display: 'flex', overflow: 'hidden', p: 0.5, borderRadius: 4 }}>
                     {/* Time column */}
-                    <Box sx={{ width: 50, flexShrink: 0, borderRight: '1px solid', borderColor: 'divider', position: 'relative', height: totalHeight }}>
+                    <Box sx={{ width: 54, flexShrink: 0, borderRight: '1px solid', borderColor: 'divider', position: 'relative', height: totalHeight, pt: 5 }}>
                       {timeLabels.map((h) => (
                         <Box
                           key={h}
                           sx={{
                             position: 'absolute',
-                            top: (h - HOUR_START) * SLOT_HEIGHT - 8,
+                            top: (h - HOUR_START) * SLOT_HEIGHT + 14,
                             left: 0,
                             width: '100%',
                             textAlign: 'right',
@@ -226,25 +263,31 @@ export default function SchedulePage() {
                           key={court.id}
                           sx={{
                             flex: 1,
-                            minWidth: 150,
+                            minWidth: 180,
                             borderRight: '1px solid',
                             borderColor: 'divider',
                             position: 'relative',
                             height: totalHeight,
+                            borderRadius: 3,
+                            overflow: 'hidden',
+                            backgroundColor: (theme) => alpha(theme.palette.background.default, 0.3),
                           }}
                         >
                           <Box
                             sx={{
                               position: 'sticky',
                               top: 0,
-                              bgcolor: 'primary.main',
-                              color: 'white',
-                              px: 1,
-                              py: 0.5,
+                              bgcolor: (theme) => alpha(theme.palette.background.paper, 0.94),
+                              color: 'text.primary',
+                              px: 1.25,
+                              py: 1,
                               zIndex: 1,
+                              borderBottom: '1px solid',
+                              borderColor: 'divider',
+                              backdropFilter: 'blur(10px)',
                             }}
                           >
-                            <Typography variant="caption" fontWeight={700}>
+                            <Typography variant="body2" fontWeight={700}>
                               {court.name}
                             </Typography>
                           </Box>
@@ -281,15 +324,17 @@ export default function SchedulePage() {
                                   height: getHeight(sess.startAt, sess.endAt),
                                   bgcolor: SESSION_TYPE_COLORS[sess.sessionType] ?? '#607D8B',
                                   color: 'white',
-                                  borderRadius: 1,
-                                  px: 0.75,
-                                  py: 0.25,
+                                  borderRadius: 2,
+                                  px: 1,
+                                  py: 0.75,
                                   overflow: 'hidden',
                                   cursor: 'pointer',
-                                  '&:hover': { opacity: 0.85 },
+                                  boxShadow: `0 18px 32px ${alpha(SESSION_TYPE_COLORS[sess.sessionType] ?? '#607D8B', 0.28)}`,
+                                  transition: 'transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease',
+                                  '&:hover': { opacity: 0.92, transform: 'translateY(-2px)' },
                                 }}
                               >
-                                <Typography variant="caption" fontWeight={700} display="block" noWrap>
+                                <Typography variant="caption" fontWeight={800} display="block" noWrap>
                                   {dayjs(sess.startAt).tz(TZ).format('HH:mm')}–
                                   {dayjs(sess.endAt).tz(TZ).format('HH:mm')}
                                 </Typography>

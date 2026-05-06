@@ -14,12 +14,16 @@ import Skeleton from '@mui/material/Skeleton';
 import CircularProgress from '@mui/material/CircularProgress';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SaveIcon from '@mui/icons-material/Save';
+import AssignmentTurnedInRoundedIcon from '@mui/icons-material/AssignmentTurnedInRounded';
+import { alpha } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { sessionsApi } from '@/lib/api/sessions';
 import { useI18n } from '@/lib/i18n';
 import { useSnackbar } from '@/components/SnackbarProvider';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
 import type { SessionMetricItem, AttendanceStatus, CompleteSessionItemRequest } from '@/lib/api/types';
 
 dayjs.extend(utc);
@@ -97,33 +101,45 @@ export default function CompleteSessionPage() {
   if (loading) {
     return (
       <Box>
-        <Skeleton height={40} width={300} />
-        {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={120} sx={{ my: 1 }} />)}
+        <Skeleton height={56} width={320} sx={{ mb: 2 }} />
+        {[1, 2, 3].map((i) => <Skeleton key={i} variant="rounded" height={180} sx={{ my: 1 }} />)}
       </Box>
     );
   }
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => router.back()}>
-          {t('common.back')}
-        </Button>
-        <Typography variant="h5">{t('complete.title')}</Typography>
-      </Box>
+      <PageHeader
+        eyebrow={t('complete.header.eyebrow')}
+        title={t('complete.title')}
+        description={t('complete.header.description')}
+        actions={
+          <Button startIcon={<ArrowBackIcon />} onClick={() => router.back()}>
+            {t('common.back')}
+          </Button>
+        }
+      />
 
       {rows.length === 0 ? (
-        <Typography color="text.secondary">{t('complete.noStudents')}</Typography>
+        <EmptyState title={t('complete.noStudents')} description={t('complete.emptyDescription')} icon={<AssignmentTurnedInRoundedIcon color="primary" />} />
       ) : (
         rows.map((row, idx) => (
-          <Paper key={row.studentId} sx={{ mb: 2, p: 2 }}>
+          <Paper
+            key={row.studentId}
+            sx={{
+              mb: 2,
+              p: 2.5,
+              background: (theme) =>
+                `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.08 : 0.035)} 100%)`,
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-              <Typography variant="subtitle1" fontWeight={700}>
+              <Typography variant="h6" fontWeight={700}>
                 {row.firstName} {row.lastName}
               </Typography>
               {row.rpe && row.durationMinutes && (
                 <Chip
-                  label={`Load: ${row.durationMinutes * row.rpe}`}
+                  label={`${t('portal.load')}: ${row.durationMinutes * row.rpe}`}
                   size="small"
                   color="info"
                 />
@@ -183,7 +199,7 @@ export default function CompleteSessionPage() {
                 rows={2}
                 sx={{ flex: 1, minWidth: 200 }}
                 color="warning"
-                helperText="Staff-only"
+                helperText={t('complete.staffOnly')}
               />
             </Box>
           </Paper>
@@ -191,16 +207,18 @@ export default function CompleteSessionPage() {
       )}
 
       {rows.length > 0 && (
-        <Button
-          variant="contained"
-          size="large"
-          startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
-          onClick={handleSave}
-          disabled={saving}
-          sx={{ mt: 1 }}
-        >
-          {t('complete.save')}
-        </Button>
+        <Box sx={{ position: 'sticky', bottom: 20, display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+            onClick={handleSave}
+            disabled={saving}
+            sx={{ mt: 1, minWidth: 220 }}
+          >
+            {t('complete.save')}
+          </Button>
+        </Box>
       )}
     </Box>
   );

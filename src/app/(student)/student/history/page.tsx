@@ -9,11 +9,17 @@ import Chip from '@mui/material/Chip';
 import Button from '@mui/material/Button';
 import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
+import { alpha } from '@mui/material/styles';
+import HistoryRoundedIcon from '@mui/icons-material/HistoryRounded';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { portalApi } from '@/lib/api/portal';
 import { useI18n } from '@/lib/i18n';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { ErrorState } from '@/components/ErrorState';
+import { fadeUpIn, motion } from '@/lib/ui/motion';
 import type { MyHistoryItemResponse } from '@/lib/api/types';
 
 dayjs.extend(utc);
@@ -34,15 +40,25 @@ export default function StudentHistoryPage() {
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const load = useCallback((off: number) => {
     setLoading(true);
+    setLoadError(false);
     portalApi
       .getHistory(PAGE_SIZE, off)
       .then((res) => {
         setItems((prev) => (off === 0 ? res.items : [...prev, ...res.items]));
         setTotal(res.total);
         setOffset(off + res.items.length);
+      })
+      .catch(() => {
+        setLoadError(true);
+        if (off === 0) {
+          setItems([]);
+          setTotal(0);
+          setOffset(0);
+        }
       })
       .finally(() => setLoading(false));
   }, []);
@@ -51,18 +67,35 @@ export default function StudentHistoryPage() {
 
   return (
     <Box>
-      <Typography variant="h5" gutterBottom>
-        {t('portal.history')}
-      </Typography>
+      <PageHeader
+        eyebrow={t('portal.history.eyebrow')}
+        title={t('portal.history')}
+        description={t('portal.history.description')}
+      />
 
       {loading && offset === 0 ? (
-        <Skeleton variant="rounded" height={300} />
+        <Skeleton variant="rounded" height={340} />
+      ) : loadError && items.length === 0 ? (
+        <ErrorState
+          title={t('common.error')}
+          description={t('portal.history.loadError')}
+          onRetry={() => load(0)}
+          retryLabel={t('common.retry')}
+        />
       ) : items.length === 0 ? (
-        <Typography color="text.secondary">{t('portal.noHistory')}</Typography>
+        <EmptyState title={t('portal.noHistory')} description={t('portal.history.emptyDescription')} icon={<HistoryRoundedIcon color="primary" />} />
       ) : (
         <>
-          {items.map((item) => (
-            <Card key={item.sessionId} sx={{ mb: 2 }}>
+          {items.map((item, idx) => (
+            <Card
+              key={item.sessionId}
+              sx={{
+                mb: 2,
+                background: (theme) =>
+                  `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.06 : 0.03)} 100%)`,
+                ...fadeUpIn(idx * motion.stagger.tight),
+              }}
+            >
               <CardContent>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <Box>
@@ -116,7 +149,7 @@ export default function StudentHistoryPage() {
 
           {offset < total && (
             <Button onClick={() => load(offset)} disabled={loading} variant="outlined" fullWidth>
-              {loading ? t('common.loading') : 'Mai mult'}
+              {loading ? t('common.loading') : t('portal.history.loadMore')}
             </Button>
           )}
         </>

@@ -3,12 +3,13 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 import { isStudent } from '@/lib/auth';
+import { useI18n } from '@/lib/i18n';
+import { LoadingState } from '@/components/LoadingState';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   useEffect(() => {
@@ -20,9 +21,7 @@ export default function HomePage() {
   }, [loading, user, router]);
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <CircularProgress />
-    </Box>
+    <LoadingState title={t('auth.guard.title')} description={t('auth.guard.description')} fullScreen />
   );
 }
 

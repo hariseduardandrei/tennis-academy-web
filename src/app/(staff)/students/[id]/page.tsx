@@ -22,6 +22,8 @@ import { useI18n } from '@/lib/i18n';
 import { useSnackbar } from '@/components/SnackbarProvider';
 import { useAuth } from '@/components/AuthProvider';
 import { isAdmin } from '@/lib/auth';
+import { PageHeader } from '@/components/PageHeader';
+import { SectionCard } from '@/components/SectionCard';
 import type { StudentDto, StudentStatus } from '@/lib/api/types';
 
 export default function StudentProfilePage() {
@@ -100,30 +102,31 @@ export default function StudentProfilePage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <Button startIcon={<ArrowBackIcon />} onClick={() => router.back()}>
-          {t('common.back')}
-        </Button>
-        <Typography variant="h5">
-          {student.firstName} {student.lastName}
-        </Typography>
-        <Chip
-          label={t(`students.status.${student.status}` as any)}
-          color={student.status === 'ACTIVE' ? 'success' : 'default'}
-        />
-        {!editing && (
-          <Button variant="outlined" onClick={() => setEditing(true)} sx={{ ml: 'auto' }}>
-            {t('common.edit')}
-          </Button>
+      <PageHeader
+        eyebrow={t('students.profile.eyebrow')}
+        title={`${student.firstName} ${student.lastName}`}
+        description={t('students.profile.description')}
+        badge={t(`students.status.${student.status}` as any)}
+        actions={(
+          <>
+            <Button startIcon={<ArrowBackIcon />} onClick={() => router.back()}>
+              {t('common.back')}
+            </Button>
+            {!editing && (
+              <Button variant="outlined" onClick={() => setEditing(true)}>
+                {t('common.edit')}
+              </Button>
+            )}
+            {isAdmin(user?.role) && !student.userId && (
+              <Button variant="contained" color="secondary" onClick={handleCreateAccount}>
+                {t('students.createAccount')}
+              </Button>
+            )}
+          </>
         )}
-        {isAdmin(user?.role) && !student.userId && (
-          <Button variant="outlined" color="secondary" onClick={handleCreateAccount}>
-            {t('students.createAccount')}
-          </Button>
-        )}
-      </Box>
+      />
 
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <SectionCard sx={{ mb: 3 }}>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
           <TextField
             label={t('students.firstName')}
@@ -185,7 +188,7 @@ export default function StudentProfilePage() {
             <Button onClick={() => setEditing(false)}>{t('common.cancel')}</Button>
           </Box>
         )}
-      </Paper>
+      </SectionCard>
 
       {/* Account created dialog */}
       <Dialog open={accountDialog} onClose={() => setAccountDialog(false)}>
@@ -194,9 +197,9 @@ export default function StudentProfilePage() {
           <Alert severity="success" sx={{ mb: 1 }}>
             {t('students.accountCreated')}
           </Alert>
-          <Typography variant="h6" fontWeight={700}>{tempPassword}</Typography>
+          <Typography variant="h4" fontWeight={700}>{tempPassword}</Typography>
           <Typography variant="caption" color="text.secondary">
-            Copiază parola acum — nu va mai fi afișată.
+            {t('students.passwordOnceHint')}
           </Typography>
         </DialogContent>
         <DialogActions>

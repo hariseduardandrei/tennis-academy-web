@@ -10,13 +10,18 @@ import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import EventBusyRoundedIcon from '@mui/icons-material/EventBusyRounded';
 import Button from '@mui/material/Button';
+import { alpha } from '@mui/material/styles';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { portalApi } from '@/lib/api/portal';
 import { useI18n } from '@/lib/i18n';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { fadeUpIn, motion } from '@/lib/ui/motion';
 import type { MyScheduleSessionResponse } from '@/lib/api/types';
 
 dayjs.extend(utc);
@@ -44,8 +49,13 @@ export default function StudentSchedulePage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-        <Typography variant="h5">{t('portal.mySchedule')}</Typography>
+      <PageHeader
+        eyebrow={t('portal.schedule.eyebrow')}
+        title={t('portal.mySchedule')}
+        description={t('portal.schedule.description')}
+      />
+
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>
           <IconButton onClick={() => setWeekStart((w) => w.subtract(1, 'week'))}>
             <ChevronLeftIcon />
@@ -63,25 +73,31 @@ export default function StudentSchedulePage() {
       </Box>
 
       {loading ? (
-        <Skeleton variant="rounded" height={300} />
+        <Skeleton variant="rounded" height={340} />
       ) : (
-        weekDays.map((day) => {
+        weekDays.map((day, dayIndex) => {
           const dayStr = day.format('YYYY-MM-DD');
           const daySessions = sessions
             .filter((s) => dayjs(s.startAt).tz(TZ).format('YYYY-MM-DD') === dayStr)
             .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
           return (
-            <Box key={dayStr} sx={{ mb: 2 }}>
+            <Box key={dayStr} sx={{ mb: 2, ...fadeUpIn(dayIndex * motion.stagger.tight) }}>
               <Typography variant="subtitle2" fontWeight={700} color="primary" sx={{ mb: 0.5 }}>
                 {day.format('dddd, D MMMM')}
               </Typography>
               {daySessions.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ pl: 1 }}>
-                  {t('today.noSessions')}
-                </Typography>
+                <EmptyState title={t('today.noSessions')} description={t('portal.schedule.emptyDayDescription')} icon={<EventBusyRoundedIcon color="primary" />} />
               ) : (
-                daySessions.map((sess) => (
-                  <Card key={sess.sessionId} sx={{ mb: 1 }}>
+                daySessions.map((sess, sessIndex) => (
+                  <Card
+                    key={sess.sessionId}
+                    sx={{
+                      mb: 1,
+                      background: (theme) =>
+                        `linear-gradient(180deg, ${theme.palette.background.paper} 0%, ${alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.08 : 0.04)} 100%)`,
+                      ...fadeUpIn(sessIndex * motion.stagger.tight),
+                    }}
+                  >
                     <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Box>
@@ -94,7 +110,7 @@ export default function StudentSchedulePage() {
                           </Typography>
                           {sess.title && <Typography variant="caption">{sess.title}</Typography>}
                         </Box>
-                        <Chip label={sess.sessionType} size="small" />
+                        <Chip label={sess.sessionType} size="small" color="primary" variant="outlined" />
                       </Box>
                     </CardContent>
                   </Card>

@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
+import { Inter, Inter_Tight } from 'next/font/google';
 import { Providers } from '@/components/Providers';
+
+const bodyFont = Inter({ subsets: ['latin'], variable: '--font-body', display: 'swap' });
+const displayFont = Inter_Tight({ subsets: ['latin'], variable: '--font-display', display: 'swap' });
 
 export const metadata: Metadata = {
   title: 'Tennis Academy',
@@ -9,7 +13,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ro">
-      <body>
+      <body className={`${bodyFont.variable} ${displayFont.variable}`}>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -21,10 +21,15 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import BlockIcon from '@mui/icons-material/Block';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import PaymentsRoundedIcon from '@mui/icons-material/PaymentsRounded';
 import dayjs from 'dayjs';
 import { billingApi } from '@/lib/api/billing';
 import { useI18n } from '@/lib/i18n';
 import { useSnackbar } from '@/components/SnackbarProvider';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { SectionCard } from '@/components/SectionCard';
+import { fadeUpIn, motion } from '@/lib/ui/motion';
 import type { BillingStudentRow, MembershipStatus } from '@/lib/api/types';
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -80,8 +85,14 @@ export default function BillingPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-        <Typography variant="h5">{t('billing.title')}</Typography>
+      <PageHeader
+        eyebrow={t('billing.header.eyebrow')}
+        title={t('billing.title')}
+        description={t('billing.header.description')}
+      />
+
+      <SectionCard sx={{ mb: 2.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <TextField
           select
           label={t('billing.year')}
@@ -106,7 +117,8 @@ export default function BillingPage() {
             </MenuItem>
           ))}
         </TextField>
-      </Box>
+        </Box>
+      </SectionCard>
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
         <Tab label={t('billing.title')} />
@@ -114,9 +126,9 @@ export default function BillingPage() {
       </Tabs>
 
       {loading ? (
-        <Skeleton variant="rounded" height={300} />
+        <Skeleton variant="rounded" height={360} />
       ) : safeRows.length === 0 ? (
-        <Typography color="text.secondary">{t('common.noData')}</Typography>
+        <EmptyState title={t('common.noData')} description={t('billing.emptyDescription')} icon={<PaymentsRoundedIcon color="primary" />} />
       ) : (
         <TableContainer component={Paper}>
           <Table>
@@ -131,8 +143,8 @@ export default function BillingPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {safeRows.map((row) => (
-                <TableRow key={row.studentId} hover>
+              {safeRows.map((row, idx) => (
+                <TableRow key={row.studentId} hover sx={fadeUpIn(idx * motion.stagger.tight)}>
                   <TableCell>
                     {row.firstName} {row.lastName}
                   </TableCell>

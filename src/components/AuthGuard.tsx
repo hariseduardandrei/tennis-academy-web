@@ -2,10 +2,10 @@
 
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Box from '@mui/material/Box';
-import CircularProgress from '@mui/material/CircularProgress';
 import { useAuth } from './AuthProvider';
 import type { UserRole } from '@/lib/auth';
+import { useI18n } from '@/lib/i18n';
+import { LoadingState } from './LoadingState';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -14,6 +14,7 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
   const { user, loading } = useAuth();
+  const { t } = useI18n();
   const router = useRouter();
 
   useEffect(() => {
@@ -28,11 +29,7 @@ export function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
   }, [loading, user, allowedRoles, router]);
 
   if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingState title={t('auth.guard.title')} description={t('auth.guard.description')} fullScreen />;
   }
 
   if (!user) return null;

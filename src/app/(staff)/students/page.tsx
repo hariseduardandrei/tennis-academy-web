@@ -23,11 +23,18 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import MenuItem from '@mui/material/MenuItem';
+import InputAdornment from '@mui/material/InputAdornment';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import AddIcon from '@mui/icons-material/Add';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
 import { studentsApi } from '@/lib/api/students';
 import { useI18n } from '@/lib/i18n';
 import { useSnackbar } from '@/components/SnackbarProvider';
+import { PageHeader } from '@/components/PageHeader';
+import { EmptyState } from '@/components/EmptyState';
+import { SectionCard } from '@/components/SectionCard';
+import { fadeUpIn, motion } from '@/lib/ui/motion';
 import type { StudentDto, StudentStatus } from '@/lib/api/types';
 
 export default function StudentsPage() {
@@ -78,14 +85,32 @@ export default function StudentsPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-        <Typography variant="h5">{t('students.title')}</Typography>
+      <PageHeader
+        eyebrow={t('students.header.eyebrow')}
+        title={t('students.title')}
+        description={t('students.header.description')}
+        actions={(
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
+            {t('students.createStudent')}
+          </Button>
+        )}
+      />
+
+      <SectionCard sx={{ mb: 2.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
         <TextField
           size="small"
           placeholder={t('common.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ ml: 'auto', width: 220 }}
+          sx={{ flex: '1 1 240px', minWidth: 220 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchRoundedIcon fontSize="small" />
+              </InputAdornment>
+            ),
+          }}
         />
         <ToggleButtonGroup
           size="small"
@@ -97,15 +122,13 @@ export default function StudentsPage() {
           <ToggleButton value="ACTIVE">{t('students.filterActive')}</ToggleButton>
           <ToggleButton value="INACTIVE">{t('students.filterInactive')}</ToggleButton>
         </ToggleButtonGroup>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setCreateOpen(true)}>
-          {t('students.createStudent')}
-        </Button>
-      </Box>
+        </Box>
+      </SectionCard>
 
       {loading ? (
-        <Skeleton variant="rounded" height={300} />
+        <Skeleton variant="rounded" height={360} />
       ) : students.length === 0 ? (
-        <Typography color="text.secondary">{t('students.noResults')}</Typography>
+        <EmptyState title={t('students.noResults')} description={t('students.emptyDescription')} icon={<PeopleRoundedIcon color="primary" />} />
       ) : (
         <TableContainer component={Paper}>
           <Table>
@@ -119,8 +142,8 @@ export default function StudentsPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {students.map((s) => (
-                <TableRow key={s.id} hover>
+              {students.map((s, idx) => (
+                <TableRow key={s.id} hover sx={fadeUpIn(idx * motion.stagger.tight)}>
                   <TableCell>{s.lastName}</TableCell>
                   <TableCell>{s.firstName}</TableCell>
                   <TableCell>{s.phone ?? '—'}</TableCell>
