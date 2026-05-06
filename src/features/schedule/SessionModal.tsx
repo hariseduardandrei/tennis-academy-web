@@ -19,10 +19,11 @@ import utc from 'dayjs/plugin/utc';
 import { sessionsApi } from '@/lib/api/sessions';
 import { studentsApi } from '@/lib/api/students';
 import { courtsApi } from '@/lib/api/courts';
+import { usersApi } from '@/lib/api/users';
 import { useI18n } from '@/lib/i18n';
 import { useSnackbar } from '@/components/SnackbarProvider';
 import { ApiError } from '@/lib/api/client';
-import type { SessionDto, CourtDto, StudentDto, SessionType } from '@/lib/api/types';
+import type { SessionDto, CourtDto, StudentDto, SessionType, StaffUserDto } from '@/lib/api/types';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -44,22 +45,40 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
 
   const [courts, setCourts] = useState<CourtDto[]>([]);
   const [students, setStudents] = useState<StudentDto[]>([]);
+  const [staffUsers, setStaffUsers] = useState<StaffUserDto[]>([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [staffUnavailable, setStaffUnavailable] = useState(false);
   const [selectedStudents, setSelectedStudents] = useState<StudentDto[]>([]);
 
   const defaultDate = initialDate ?? dayjs().tz(TZ).format('YYYY-MM-DD');
   const [startAt, setStartAt] = useState(defaultDate + 'T09:00');
   const [endAt, setEndAt] = useState(defaultDate + 'T10:00');
   const [courtId, setCourtId] = useState<number>(1);
-  const [staffUserId, setStaffUserId] = useState('');
+  const [selectedStaff, setSelectedStaff] = useState<StaffUserDto | null>(null);
   const [sessionType, setSessionType] = useState<SessionType>('TENNIS');
   const [title, setTitle] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const getStaffLabel = (staff: StaffUserDto) => {
+    const fullName = [staff.firstName, staff.lastName].filter(Boolean).join(' ').trim();
+    return fullName || staff.email;
+  };
+
   useEffect(() => {
     if (open) {
       courtsApi.list().then(setCourts);
       studentsApi.list({ status: 'ACTIVE' }).then(setStudents);
+      setStaffLoading(true);
+      setStaffUnavailable(false);
+      usersApi
+        .listStaff()
+        .then(setStaffUsers)
+        .catch(() => {
+          setStaffUsers([]);
+          setStaffUnavailable(true);
+        })
+        .finally(() => setStaffLoading(false));
     }
   }, [open]);
 
@@ -68,7 +87,14 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
       setStartAt(dayjs(session.startAt).tz(TZ).format('YYYY-MM-DDTHH:mm'));
       setEndAt(dayjs(session.endAt).tz(TZ).format('YYYY-MM-DDTHH:mm'));
       setCourtId(session.court.id);
-      setStaffUserId(session.staffUser.id);
+      setSelectedStaff({
+        id: session.staffUser.id,
+        email: session.staffUser.email,
+        firstName: undefined,
+        lastName: undefined,
+        role: 'COACH',
+        language: 'RO',
+      });
       setSessionType(session.sessionType);
       setTitle(session.title ?? '');
       setSelectedStudents(
@@ -84,13 +110,21 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
       setStartAt((initialDate ?? defaultDate) + 'T09:00');
       setEndAt((initialDate ?? defaultDate) + 'T10:00');
       setCourtId(1);
-      setStaffUserId('');
+      setSelectedStaff(null);
       setSessionType('TENNIS');
       setTitle('');
       setSelectedStudents([]);
     }
     setError('');
   }, [session, open, initialDate, defaultDate]);
+
+  useEffect(() => {
+    if (!open || !session || staffUsers.length === 0) return;
+    const matchedStaff = staffUsers.find((s) => s.id === session.staffUser.id) ?? null;
+    if (matchedStaff) {
+      setSelectedStaff(matchedStaff);
+    }
+  }, [open, session, staffUsers]);
 
   const toUtc = (localStr: string) => dayjs.tz(localStr, TZ).toISOString();
 
@@ -99,12 +133,17 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
     setSaving(true);
     try {
       const studentIds = selectedStudents.map((s) => s.id);
+      if (!selectedStaff) {
+        setError(t('schedule.staffRequired'));
+        return;
+      }
+
       if (session) {
         await sessionsApi.patch(session.id, {
           startAt: toUtc(startAt),
           endAt: toUtc(endAt),
           courtId,
-          staffUserId: staffUserId || undefined,
+          staffUserId: selectedStaff.id,
           sessionType,
           title: title || undefined,
         });
@@ -114,7 +153,7 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
           startAt: toUtc(startAt),
           endAt: toUtc(endAt),
           courtId,
-          staffUserId,
+          staffUserId: selectedStaff.id,
           sessionType,
           title: title || undefined,
           studentIds,
@@ -179,12 +218,37 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
               </MenuItem>
             ))}
           </TextField>
-          <TextField
-            label={t('schedule.staffUser')}
-            value={staffUserId}
-            onChange={(e) => setStaffUserId(e.target.value)}
+          <Autocomplete
+            options={staffUsers}
+            loading={staffLoading}
+            value={selectedStaff}
+            onChange={(_, value) => setSelectedStaff(value)}
+            getOptionLabel={getStaffLabel}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            filterOptions={(options, state) => {
+              const query = state.inputValue.trim().toLowerCase();
+              if (!query) return options;
+              return options.filter((staff) => {
+                const fullName = `${staff.firstName ?? ''} ${staff.lastName ?? ''}`.toLowerCase();
+                return fullName.includes(query) || staff.email.toLowerCase().includes(query);
+              });
+            }}
+            noOptionsText={t('schedule.staffNoResults')}
+            renderOption={(props, option) => (
+              <Box component="li" {...props} key={option.id}>
+                {getStaffLabel(option)}
+              </Box>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={t('schedule.staffUser')}
+                placeholder={t('schedule.staffSearchPlaceholder')}
+                helperText={staffUnavailable ? t('schedule.staffLookupUnavailable') : undefined}
+                error={staffUnavailable}
+              />
+            )}
             fullWidth
-            helperText="Staff user ID (email lookup TODO when /users/staff is available)"
           />
           <TextField
             select
@@ -237,7 +301,7 @@ export function SessionModal({ open, onClose, onSaved, initialDate, session }: S
         <Button
           variant="contained"
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || !selectedStaff}
           startIcon={saving ? <CircularProgress size={16} color="inherit" /> : null}
         >
           {t('common.save')}
