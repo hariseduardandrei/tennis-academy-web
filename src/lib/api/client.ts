@@ -1,6 +1,6 @@
 import { authStorage } from '@/lib/auth';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '/api';
 
 export class ApiError extends Error {
   constructor(
@@ -66,4 +66,3 @@ export const apiClient = {
   postPublic: <T>(path: string, body: unknown) =>
     request<T>(path, { method: 'POST', body: JSON.stringify(body) }, false),
 };
-

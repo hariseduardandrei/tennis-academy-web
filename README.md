@@ -47,9 +47,12 @@ npm run dev
 
 | Variable | Default | Description |
 |---|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8080` | Backend API base URL |
+| `NEXT_PUBLIC_API_BASE_URL` | `/api` | Browser-facing API base URL (same-origin proxy path) |
+| `BACKEND_API_BASE_URL` | `http://localhost:8080` | Next.js server-side proxy target for backend API |
 
-For production, set `NEXT_PUBLIC_API_BASE_URL=https://api.<yourdomain>` in your Docker/VPS environment.
+For production, either:
+- keep proxy mode (`NEXT_PUBLIC_API_BASE_URL=/api`) and set `BACKEND_API_BASE_URL=https://api.<yourdomain>`, or
+- set `NEXT_PUBLIC_API_BASE_URL` directly to your public backend URL if CORS is configured.
 
 ---
 
