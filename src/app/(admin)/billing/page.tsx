@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Table from '@mui/material/Table';
@@ -54,7 +53,7 @@ export default function BillingPage() {
     try {
       if (tab === 0) {
         const res = await billingApi.getMonth(year, month);
-        setRows(res.rows);
+        setRows(res);
       } else {
         const res = await billingApi.getOverdue(year, month);
         setOverdueRows(res);
@@ -77,6 +76,7 @@ export default function BillingPage() {
   };
 
   const displayRows = tab === 0 ? rows : overdueRows;
+  const safeRows = displayRows ?? [];
 
   return (
     <Box>
@@ -115,7 +115,7 @@ export default function BillingPage() {
 
       {loading ? (
         <Skeleton variant="rounded" height={300} />
-      ) : displayRows.length === 0 ? (
+      ) : safeRows.length === 0 ? (
         <Typography color="text.secondary">{t('common.noData')}</Typography>
       ) : (
         <TableContainer component={Paper}>
@@ -131,7 +131,7 @@ export default function BillingPage() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {displayRows.map((row) => (
+              {safeRows.map((row) => (
                 <TableRow key={row.studentId} hover>
                   <TableCell>
                     {row.firstName} {row.lastName}

@@ -213,5 +213,17 @@ export interface StaffUserDto {
   id: string;
   email: string;
   role: 'ADMIN' | 'COACH' | 'TRAINER';
+  language?: string;
 }
 
+export interface CreateStaffUserRequest {
+  email: string;
+  password: string;
+  role: 'ADMIN' | 'COACH' | 'TRAINER';
+  language: 'ro' | 'en';
+}
+
+export interface PatchStaffUserRequest {
+  role?: 'ADMIN' | 'COACH' | 'TRAINER';
+  language?: 'ro' | 'en';
+}

@@ -6,7 +6,6 @@ import type {
   ReplaceStudentsRequest,
   CompleteSessionRequest,
   SessionMetricsResponse,
-  StaffUserDto,
 } from './types';
 
 export const sessionsApi = {
@@ -23,9 +22,3 @@ export const sessionsApi = {
   getMetrics: (id: string) =>
     apiClient.get<SessionMetricsResponse>(`/sessions/${id}/metrics`),
 };
-
-// TODO: Add GET /users endpoint for staff user picker when backend provides it
-export const usersApi = {
-  listStaff: () => apiClient.get<StaffUserDto[]>('/users/staff'),
-};
-

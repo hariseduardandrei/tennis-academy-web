@@ -13,6 +13,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useAuth } from '@/components/AuthProvider';
 import { useI18n } from '@/lib/i18n';
 import { isStudent } from '@/lib/auth';
+import { ApiError } from '@/lib/api/client';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -34,8 +35,12 @@ export default function LoginPage() {
       const user = raw ? JSON.parse(raw) : null;
       if (isStudent(user?.role)) router.replace('/student');
       else router.replace('/today');
-    } catch {
-      setError(t('auth.loginError'));
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setError(t('auth.loginError'));
+      } else {
+        setError(t('auth.serviceError'));
+      }
     } finally {
       setLoading(false);
     }

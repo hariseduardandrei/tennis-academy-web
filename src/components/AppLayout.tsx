@@ -25,6 +25,7 @@ import PaymentIcon from '@mui/icons-material/Payment';
 import HomeIcon from '@mui/icons-material/Home';
 import HistoryIcon from '@mui/icons-material/History';
 import EventIcon from '@mui/icons-material/Event';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
 import { useAuth } from './AuthProvider';
 import { useI18n } from '@/lib/i18n';
 import { isAdmin, isStaff } from '@/lib/auth';
@@ -44,7 +45,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { label: t('nav.schedule'), icon: <CalendarMonthIcon />, href: '/schedule' },
     { label: t('nav.students'), icon: <PeopleIcon />, href: '/students' },
     ...(isAdmin(user?.role)
-      ? [{ label: t('nav.billing'), icon: <PaymentIcon />, href: '/billing' }]
+      ? [
+          { label: t('nav.billing'), icon: <PaymentIcon />, href: '/billing' },
+          { label: t('nav.staffUsers'), icon: <SupervisorAccountIcon />, href: '/users' },
+        ]
       : []),
   ];
 

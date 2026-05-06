@@ -30,6 +30,7 @@ const en: Record<TranslationKey, string> = {
   'nav.schedule': 'Schedule',
   'nav.students': 'Students',
   'nav.billing': 'Billing',
+  'nav.staffUsers': 'Staff',
   'nav.logout': 'Logout',
   'nav.mySchedule': 'My Schedule',
   'nav.myHistory': 'History',
@@ -43,6 +44,7 @@ const en: Record<TranslationKey, string> = {
   'auth.password': 'Password',
   'auth.loginBtn': 'Sign In',
   'auth.loginError': 'Invalid email or password.',
+  'auth.serviceError': 'Authentication service is currently unavailable. Please try again.',
   'auth.loggingIn': 'Signing in...',
   'auth.logout': 'Logout',
   'auth.welcome': 'Welcome to Tennis Academy',
@@ -117,6 +119,15 @@ const en: Record<TranslationKey, string> = {
   'students.load': 'Training load',
   'students.notes': 'Notes',
 
+  // Staff users
+  'users.staff.title': 'Staff (coaches/admins)',
+  'users.staff.add': 'Add staff user',
+  'users.staff.role': 'Role',
+  'users.staff.created': 'Staff account created.',
+  'users.staff.updated': 'Staff account updated.',
+  'users.staff.listNotAvailable': 'Staff listing is not available from backend yet.',
+  'users.staff.updateNotAvailable': 'Staff update is not available from backend yet.',
+
   // Billing
   'billing.title': 'Billing',
   'billing.month': 'Month',
@@ -154,4 +165,3 @@ const en: Record<TranslationKey, string> = {
 };
 
 export default en;
-

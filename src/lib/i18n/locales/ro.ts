@@ -28,6 +28,7 @@ const ro = {
   'nav.schedule': 'Program',
   'nav.students': 'Studenți',
   'nav.billing': 'Facturare',
+  'nav.staffUsers': 'Personal',
   'nav.logout': 'Deconectare',
   'nav.mySchedule': 'Programul meu',
   'nav.myHistory': 'Istoric',
@@ -41,6 +42,7 @@ const ro = {
   'auth.password': 'Parolă',
   'auth.loginBtn': 'Intră în cont',
   'auth.loginError': 'Email sau parolă incorectă.',
+  'auth.serviceError': 'Serviciul de autentificare nu este disponibil acum. Încearcă din nou.',
   'auth.loggingIn': 'Se autentifică...',
   'auth.logout': 'Deconectare',
   'auth.welcome': 'Bun venit la Academia de Tenis',
@@ -114,6 +116,15 @@ const ro = {
   'students.membership': 'Abonament',
   'students.load': 'Încărcare',
   'students.notes': 'Note',
+
+  // Staff users
+  'users.staff.title': 'Personal (antrenori/admini)',
+  'users.staff.add': 'Adaugă personal',
+  'users.staff.role': 'Rol',
+  'users.staff.created': 'Contul de personal a fost creat.',
+  'users.staff.updated': 'Contul de personal a fost actualizat.',
+  'users.staff.listNotAvailable': 'Listarea personalului nu este disponibilă încă din backend.',
+  'users.staff.updateNotAvailable': 'Modificarea personalului nu este disponibilă încă din backend.',
 
   // Billing
   'billing.title': 'Facturare',
