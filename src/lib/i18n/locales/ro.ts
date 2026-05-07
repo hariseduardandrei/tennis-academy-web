@@ -20,6 +20,9 @@ const ro = {
   'common.today': 'Azi',
   'common.week': 'Săptămână',
   'common.month': 'Lună',
+  'common.density': 'Densitate',
+  'common.compact': 'Compact',
+  'common.comfortable': 'Confortabil',
   'common.required': 'Câmp obligatoriu',
   'common.optional': 'opțional',
   'common.close': 'Închide',
@@ -87,6 +90,10 @@ const ro = {
   'today.sessionsCount': '{count} sesiuni',
   'today.emptyCourtDescription': 'Acest teren nu are sesiuni programate pentru astăzi.',
   'today.loadError': 'Nu am putut încărca programul de azi. Încearcă din nou.',
+  'today.coach': 'Antrenor',
+  'today.players': 'Jucători',
+  'today.noPlayers': 'Fără jucători',
+  'today.morePlayers': '+{count} alți jucători',
 
   // Schedule
   'schedule.title': 'Program săptămânal',

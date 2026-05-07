@@ -22,6 +22,9 @@ const en: Record<TranslationKey, string> = {
   'common.today': 'Today',
   'common.week': 'Week',
   'common.month': 'Month',
+  'common.density': 'Density',
+  'common.compact': 'Compact',
+  'common.comfortable': 'Comfortable',
   'common.required': 'Required field',
   'common.optional': 'optional',
   'common.close': 'Close',
@@ -89,6 +92,10 @@ const en: Record<TranslationKey, string> = {
   'today.sessionsCount': '{count} sessions',
   'today.emptyCourtDescription': 'This court has no scheduled sessions for today.',
   'today.loadError': 'We could not load today\'s schedule. Please try again.',
+  'today.coach': 'Coach',
+  'today.players': 'Players',
+  'today.noPlayers': 'No players',
+  'today.morePlayers': '+{count} more players',
 
   // Schedule
   'schedule.title': 'Weekly Schedule',

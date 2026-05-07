@@ -40,6 +40,8 @@ export interface SessionCourtInfo {
 
 export interface SessionStaffInfo {
   id: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
 }
 

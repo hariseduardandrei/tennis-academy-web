@@ -27,14 +27,18 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import isoWeek from 'dayjs/plugin/isoWeek';
+import { motion as fm, useReducedMotion } from 'framer-motion';
 import 'dayjs/locale/ro';
 import { sessionsApi } from '@/lib/api/sessions';
 import { courtsApi } from '@/lib/api/courts';
 import { useI18n } from '@/lib/i18n';
 import { useSnackbar } from '@/components/SnackbarProvider';
 import { PageHeader } from '@/components/PageHeader';
+import { DensityToggle } from '@/components/DensityToggle';
 import { EmptyState } from '@/components/EmptyState';
 import { SessionModal } from '@/features/schedule/SessionModal';
+import { useDensityPreference } from '@/lib/ui/density';
+import { getSessionTypeVisual, getStaffDisplayName, getVisibleStudentNames } from '@/lib/ui/sessionDisplay';
 import type { SessionDto, CourtDto } from '@/lib/api/types';
 
 dayjs.extend(utc);
@@ -44,31 +48,28 @@ const TZ = 'Europe/Bucharest';
 
 const HOUR_START = 7;
 const HOUR_END = 22;
-const SLOT_HEIGHT = 60; // px per hour
+const SLOT_HEIGHT_COMFORTABLE = 60;
+const SLOT_HEIGHT_COMPACT = 48;
 
-const SESSION_TYPE_COLORS: Record<string, string> = {
-  TENNIS: '#2E7D32',
-  FITNESS: '#1565C0',
-  MATCHPLAY: '#E65100',
-};
-
-function getTopOffset(dateStr: string): number {
+function getTopOffset(dateStr: string, slotHeight: number): number {
   const d = dayjs(dateStr).tz(TZ);
   const h = d.hour() + d.minute() / 60;
-  return (h - HOUR_START) * SLOT_HEIGHT;
+  return (h - HOUR_START) * slotHeight;
 }
 
-function getHeight(startStr: string, endStr: string): number {
+function getHeight(startStr: string, endStr: string, slotHeight: number): number {
   const start = dayjs(startStr).tz(TZ);
   const end = dayjs(endStr).tz(TZ);
   const diffH = end.diff(start, 'minute') / 60;
-  return Math.max(diffH * SLOT_HEIGHT, 24);
+  return Math.max(diffH * slotHeight, 24);
 }
 
 export default function SchedulePage() {
   const { t } = useI18n();
   const { showSuccess, showError } = useSnackbar();
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
+  const { density, setDensity } = useDensityPreference('comfortable');
 
   const [weekStart, setWeekStart] = useState<dayjs.Dayjs>(() =>
     dayjs().tz(TZ).startOf('isoWeek'),
@@ -122,7 +123,10 @@ export default function SchedulePage() {
   };
 
   const timeLabels = Array.from({ length: HOUR_END - HOUR_START }, (_, i) => HOUR_START + i);
-  const totalHeight = (HOUR_END - HOUR_START) * SLOT_HEIGHT;
+  const slotHeight = density === 'compact' ? SLOT_HEIGHT_COMPACT : SLOT_HEIGHT_COMFORTABLE;
+  const totalHeight = (HOUR_END - HOUR_START) * slotHeight;
+  const isCompact = density === 'compact';
+  const headerOffset = isCompact ? 20 : 22;
 
   return (
     <Box>
@@ -132,6 +136,7 @@ export default function SchedulePage() {
         description={t('schedule.header.description')}
         actions={(
           <>
+            <DensityToggle density={density} onChange={setDensity} />
             <Box
               sx={{
                 display: 'flex',
@@ -164,7 +169,7 @@ export default function SchedulePage() {
         )}
       />
 
-      <Paper sx={{ p: { xs: 2, md: 2.5 }, mb: 2.5 }}>
+      <Paper sx={{ p: { xs: isCompact ? 1.5 : 2, md: isCompact ? 2 : 2.5 }, mb: 2.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <IconButton onClick={() => setWeekStart((w) => w.subtract(1, 'week'))}>
@@ -192,7 +197,7 @@ export default function SchedulePage() {
       </Paper>
 
       {/* Day tabs */}
-      <Box sx={{ display: 'flex', gap: 1, mb: 2.5, overflowX: 'auto', pb: 0.5 }}>
+      <Box sx={{ display: 'flex', gap: 1, mb: isCompact ? 2 : 2.5, overflowX: 'auto', pb: 0.5 }}>
         {weekDays.map((d) => {
           const isToday = d.format('YYYY-MM-DD') === dayjs().tz(TZ).format('YYYY-MM-DD');
           return (
@@ -202,7 +207,7 @@ export default function SchedulePage() {
               color={isToday ? 'primary' : 'default'}
               variant={isToday ? 'filled' : 'outlined'}
               size="small"
-              sx={{ minWidth: 72 }}
+              sx={{ minWidth: isCompact ? 64 : 72 }}
             />
           );
         })}
@@ -241,7 +246,7 @@ export default function SchedulePage() {
                           key={h}
                           sx={{
                             position: 'absolute',
-                            top: (h - HOUR_START) * SLOT_HEIGHT + 14,
+                            top: (h - HOUR_START) * slotHeight + (isCompact ? 10 : 14),
                             left: 0,
                             width: '100%',
                             textAlign: 'right',
@@ -298,7 +303,7 @@ export default function SchedulePage() {
                               key={h}
                               sx={{
                                 position: 'absolute',
-                                top: (h - HOUR_START) * SLOT_HEIGHT,
+                                top: (h - HOUR_START) * slotHeight,
                                 left: 0,
                                 right: 0,
                                 borderTop: '1px solid',
@@ -309,41 +314,81 @@ export default function SchedulePage() {
                           ))}
 
                           {/* Session blocks */}
-                          {courtSessions.map((sess) => (
+                          {courtSessions.map((sess, sessIndex) => {
+                            const { names: visibleStudentNames, hiddenCount } = getVisibleStudentNames(sess.students, 2);
+                            const visual = getSessionTypeVisual(sess.sessionType);
+                            const SessionTypeIcon = visual.icon;
+                            return (
                             <Tooltip
                               key={sess.id}
-                              title={`${sess.staffUser.email} · ${sess.students.length} studenți`}
+                              title={(
+                                <Box>
+                                  <Typography variant="caption" fontWeight={700} display="block">
+                                    {getStaffDisplayName(sess.staffUser)}
+                                  </Typography>
+                                  <Typography variant="caption" display="block">
+                                    {sess.students.map((student) => `${student.firstName} ${student.lastName}`).join(', ') || t('today.noPlayers')}
+                                  </Typography>
+                                </Box>
+                              )}
                               placement="right"
                             >
                               <Box
+                                component={fm.div}
+                                initial={reduceMotion ? false : { opacity: 0, y: 7, scale: 0.99 }}
+                                animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                                transition={reduceMotion ? undefined : { duration: 0.22, delay: sessIndex * 0.035 }}
+                                whileHover={reduceMotion ? undefined : { y: -2 }}
                                 sx={{
                                   position: 'absolute',
-                                  top: getTopOffset(sess.startAt) + 22, // offset for header
+                                  top: getTopOffset(sess.startAt, slotHeight) + headerOffset,
                                   left: 4,
                                   right: 4,
-                                  height: getHeight(sess.startAt, sess.endAt),
-                                  bgcolor: SESSION_TYPE_COLORS[sess.sessionType] ?? '#607D8B',
+                                  height: getHeight(sess.startAt, sess.endAt, slotHeight),
+                                  backgroundImage: (theme) => visual.surface(theme),
                                   color: 'white',
                                   borderRadius: 2,
-                                  px: 1,
-                                  py: 0.75,
+                                  px: isCompact ? 0.8 : 1,
+                                  py: isCompact ? 0.6 : 0.75,
                                   overflow: 'hidden',
                                   cursor: 'pointer',
-                                  boxShadow: `0 18px 32px ${alpha(SESSION_TYPE_COLORS[sess.sessionType] ?? '#607D8B', 0.28)}`,
+                                  border: '1px solid',
+                                  borderColor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.52 : 0.34),
+                                  boxShadow: (theme) => `0 14px 24px ${visual.shadow(theme)}`,
                                   transition: 'transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease',
-                                  '&:hover': { opacity: 0.92, transform: 'translateY(-2px)' },
+                                  '&:hover': { opacity: 0.96 },
                                 }}
                               >
-                                <Typography variant="caption" fontWeight={800} display="block" noWrap>
-                                  {dayjs(sess.startAt).tz(TZ).format('HH:mm')}–
-                                  {dayjs(sess.endAt).tz(TZ).format('HH:mm')}
-                                </Typography>
+                                <Box
+                                  sx={{
+                                    position: 'absolute',
+                                    left: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: 3,
+                                    bgcolor: (theme) => visual.rail(theme),
+                                  }}
+                                />
+                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                  <Typography variant="caption" fontWeight={800} display="block" noWrap>
+                                    {dayjs(sess.startAt).tz(TZ).format('HH:mm')}–
+                                    {dayjs(sess.endAt).tz(TZ).format('HH:mm')}
+                                  </Typography>
+                                  <SessionTypeIcon sx={{ fontSize: isCompact ? 13 : 14, opacity: 0.94 }} />
+                                </Box>
                                 {sess.title && (
                                   <Typography variant="caption" display="block" noWrap>
                                     {sess.title}
                                   </Typography>
                                 )}
-                                <Box sx={{ display: 'flex', gap: 0.5, mt: 0.25 }}>
+                                <Typography variant="caption" display="block" noWrap sx={{ opacity: 0.95, fontWeight: 600 }}>
+                                  {getStaffDisplayName(sess.staffUser)}
+                                </Typography>
+                                <Typography variant="caption" display="block" noWrap sx={{ opacity: 0.9 }}>
+                                  {visibleStudentNames.join(', ')}
+                                  {hiddenCount > 0 ? ` +${hiddenCount}` : ''}
+                                </Typography>
+                                <Box sx={{ display: 'flex', gap: 0.5, mt: isCompact ? 0.1 : 0.25 }}>
                                   <Tooltip title={t('today.complete')}>
                                     <IconButton
                                       size="small"
@@ -384,7 +429,8 @@ export default function SchedulePage() {
                                 </Box>
                               </Box>
                             </Tooltip>
-                          ))}
+                            );
+                          })}
                         </Box>
                       );
                     })}

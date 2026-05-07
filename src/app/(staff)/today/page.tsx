@@ -12,33 +12,37 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
+import Stack from '@mui/material/Stack';
+import Avatar from '@mui/material/Avatar';
 import { alpha } from '@mui/material/styles';
 import SportsTennisRoundedIcon from '@mui/icons-material/SportsTennisRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import { motion as fm, useReducedMotion } from 'framer-motion';
 import { sessionsApi } from '@/lib/api/sessions';
 import { courtsApi } from '@/lib/api/courts';
 import { useI18n } from '@/lib/i18n';
 import { PageHeader } from '@/components/PageHeader';
+import { DensityToggle } from '@/components/DensityToggle';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { fadeUpIn, motion } from '@/lib/ui/motion';
+import { useDensityPreference } from '@/lib/ui/density';
+import { getSessionTypeVisual, getStaffDisplayName, getVisibleStudentNames } from '@/lib/ui/sessionDisplay';
 import type { SessionDto, CourtDto } from '@/lib/api/types';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 const TZ = 'Europe/Bucharest';
 
-const SESSION_TYPE_COLORS: Record<string, 'success' | 'info' | 'warning'> = {
-  TENNIS: 'success',
-  FITNESS: 'info',
-  MATCHPLAY: 'warning',
-};
-
 export default function TodayPage() {
   const { t } = useI18n();
   const router = useRouter();
+  const reduceMotion = useReducedMotion();
+  const { density, setDensity } = useDensityPreference('comfortable');
   const [sessions, setSessions] = useState<SessionDto[]>([]);
   const [courts, setCourts] = useState<CourtDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,6 +79,8 @@ export default function TodayPage() {
       .filter((s) => s.court.id === courtId)
       .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime());
 
+  const isCompact = density === 'compact';
+
   if (loading) {
     return (
       <Box>
@@ -83,6 +89,7 @@ export default function TodayPage() {
           title={t('today.title')}
           description={t('today.header.descriptionLoading')}
           badge={dayjs().tz(TZ).format('D MMM')}
+          actions={<DensityToggle density={density} onChange={setDensity} />}
         />
         <Grid container spacing={2}>
           {[1, 2, 3, 4].map((i) => (
@@ -103,6 +110,7 @@ export default function TodayPage() {
           title={t('today.title')}
           description={t('today.header.description')}
           badge={dayjs().tz(TZ).format('dddd, D MMMM YYYY')}
+          actions={<DensityToggle density={density} onChange={setDensity} />}
         />
         <ErrorState
           title={t('common.error')}
@@ -121,6 +129,7 @@ export default function TodayPage() {
         title={t('today.title')}
         description={t('today.header.description')}
         badge={dayjs().tz(TZ).format('dddd, D MMMM YYYY')}
+        actions={<DensityToggle density={density} onChange={setDensity} />}
       />
       <Grid container spacing={2}>
         {courts.map((court, courtIndex) => {
@@ -145,54 +154,116 @@ export default function TodayPage() {
                   {courtSessions.length === 0 ? (
                     <EmptyState title={t('today.noSessions')} description={t('today.emptyCourtDescription')} icon={<SportsTennisRoundedIcon color="primary" />} />
                   ) : (
-                    courtSessions.map((sess, sessIndex) => (
-                      <Box
-                        key={sess.id}
-                        sx={{
-                          mb: 1.5,
-                          p: 1.75,
-                          borderRadius: 3,
-                          bgcolor: (theme) => alpha(theme.palette.background.default, 0.72),
-                          border: '1px solid',
-                          borderColor: 'divider',
-                          transition: `transform ${motion.duration.fast}ms ${motion.easing.standard}, border-color ${motion.duration.fast}ms ${motion.easing.standard}, background-color ${motion.duration.fast}ms ${motion.easing.standard}`,
-                          ...fadeUpIn(sessIndex * motion.stagger.tight),
-                          '&:hover': {
-                            transform: 'translateY(-2px)',
-                            borderColor: 'primary.main',
-                          },
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2" fontWeight={700}>
-                            {dayjs(sess.startAt).tz(TZ).format('HH:mm')}–
-                            {dayjs(sess.endAt).tz(TZ).format('HH:mm')}
-                          </Typography>
-                          <Chip
-                            label={t(`schedule.type.${sess.sessionType}` as any)}
-                            size="small"
-                            color={SESSION_TYPE_COLORS[sess.sessionType] ?? 'default'}
+                    courtSessions.map((sess, sessIndex) => {
+                      const { names: visibleStudentNames, hiddenCount } = getVisibleStudentNames(sess.students, 3);
+                      const visual = getSessionTypeVisual(sess.sessionType);
+                      const SessionTypeIcon = visual.icon;
+                      return (
+                        <Box
+                          component={fm.div}
+                          key={sess.id}
+                          initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.985 }}
+                          animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                          transition={reduceMotion ? undefined : { duration: 0.26, delay: sessIndex * 0.045 }}
+                          whileHover={reduceMotion ? undefined : { y: -3 }}
+                          sx={{
+                            position: 'relative',
+                            mb: isCompact ? 1.25 : 1.75,
+                            p: isCompact ? 1.5 : 2,
+                            borderRadius: 4,
+                            bgcolor: (theme) => alpha(theme.palette.background.default, 0.58),
+                            backgroundImage: (theme) => visual.surface(theme),
+                            border: '1px solid',
+                            borderColor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.38 : 0.26),
+                            boxShadow: (theme) => `0 18px 34px ${visual.shadow(theme)}`,
+                            backdropFilter: 'blur(8px)',
+                            transition: `transform ${motion.duration.fast}ms ${motion.easing.standard}, border-color ${motion.duration.fast}ms ${motion.easing.standard}, box-shadow ${motion.duration.fast}ms ${motion.easing.standard}`,
+                            ...fadeUpIn(sessIndex * motion.stagger.tight),
+                            '&:hover': {
+                              borderColor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.58 : 0.42),
+                              boxShadow: (theme) => `0 24px 42px ${visual.shadow(theme)}`,
+                            },
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: 4,
+                              borderTopLeftRadius: 16,
+                              borderBottomLeftRadius: 16,
+                              bgcolor: (theme) => visual.rail(theme),
+                            }}
                           />
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" fontWeight={800}>
+                              {dayjs(sess.startAt).tz(TZ).format('HH:mm')}–
+                              {dayjs(sess.endAt).tz(TZ).format('HH:mm')}
+                            </Typography>
+                            <Chip
+                              label={t(`schedule.type.${sess.sessionType}` as any)}
+                              size="small"
+                              icon={<SessionTypeIcon sx={{ fontSize: isCompact ? 13 : 14 }} />}
+                              sx={{
+                                color: 'text.primary',
+                                bgcolor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.28 : 0.16),
+                                border: '1px solid',
+                                borderColor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.45 : 0.24),
+                              }}
+                            />
+                          </Box>
+
+                          {sess.title && (
+                            <Typography variant={isCompact ? 'caption' : 'body2'} fontWeight={700} sx={{ mb: isCompact ? 0.8 : 1.25 }}>
+                              {sess.title}
+                            </Typography>
+                          )}
+
+                          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: isCompact ? 0.75 : 1 }}>
+                            <Avatar sx={{ width: 24, height: 24, bgcolor: (theme) => alpha(theme.palette.primary.main, 0.18) }}>
+                              <PersonRoundedIcon sx={{ fontSize: 14, color: 'primary.main' }} />
+                            </Avatar>
+                            <Box>
+                              <Typography variant="caption" color="text.secondary">{t('today.coach')}</Typography>
+                              <Typography variant={isCompact ? 'caption' : 'body2'} fontWeight={700}>{getStaffDisplayName(sess.staffUser)}</Typography>
+                            </Box>
+                          </Stack>
+
+                          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: isCompact ? 0.8 : 1.25 }}>
+                            <Avatar sx={{ width: 24, height: 24, bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.16) }}>
+                              <GroupRoundedIcon sx={{ fontSize: 14, color: 'secondary.main' }} />
+                            </Avatar>
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography variant="caption" color="text.secondary">{t('today.players')}</Typography>
+                              <Typography variant={isCompact ? 'caption' : 'body2'} fontWeight={700} noWrap>
+                                {visibleStudentNames.join(', ') || t('today.noPlayers')}
+                              </Typography>
+                            </Box>
+                          </Stack>
+
+                          <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: isCompact ? 0.8 : 1.25 }}>
+                            {visibleStudentNames.map((studentName) => (
+                              <Chip key={studentName} label={studentName} size="small" variant="outlined" />
+                            ))}
+                            {hiddenCount > 0 && (
+                              <Chip label={t('today.morePlayers', { count: hiddenCount })} size="small" />
+                            )}
+                          </Box>
+
+                          <CardActions sx={{ p: 0, mt: isCompact ? 0.6 : 1 }}>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              onClick={() => router.push(`/sessions/${sess.id}/complete`)}
+                            >
+                              {t('today.complete')}
+                            </Button>
+                          </CardActions>
                         </Box>
-                        {sess.title && (
-                          <Typography variant="body2" display="block" sx={{ mb: 0.5 }}>
-                            {sess.title}
-                          </Typography>
-                        )}
-                        <Typography variant="caption" color="text.secondary" display="block">
-                          {sess.staffUser.email} · {sess.students.length} studenți
-                        </Typography>
-                        <CardActions sx={{ p: 0, mt: 1.5 }}>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            onClick={() => router.push(`/sessions/${sess.id}/complete`)}
-                          >
-                            {t('today.complete')}
-                          </Button>
-                        </CardActions>
-                      </Box>
-                    ))
+                      );
+                    })
                   )}
                 </CardContent>
               </Card>
