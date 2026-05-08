@@ -12,12 +12,8 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
-import Stack from '@mui/material/Stack';
-import Avatar from '@mui/material/Avatar';
 import { alpha } from '@mui/material/styles';
 import SportsTennisRoundedIcon from '@mui/icons-material/SportsTennisRounded';
-import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
-import GroupRoundedIcon from '@mui/icons-material/GroupRounded';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -29,6 +25,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { DensityToggle } from '@/components/DensityToggle';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { SessionPeopleRows } from '@/components/SessionPeopleRows';
 import { fadeUpIn, motion } from '@/lib/ui/motion';
 import { useDensityPreference } from '@/lib/ui/density';
 import { getSessionTypeVisual, getStaffDisplayName } from '@/lib/ui/sessionDisplay';
@@ -220,86 +217,17 @@ export default function TodayPage() {
                             </Typography>
                           )}
 
-                          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: isCompact ? 0.75 : 1 }}>
-                            <Avatar sx={{ width: 24, height: 24, bgcolor: (theme) => alpha(theme.palette.primary.main, 0.18) }}>
-                              <PersonRoundedIcon sx={{ fontSize: 14, color: 'primary.main' }} />
-                            </Avatar>
-                            <Box>
-                              <Typography variant="caption" color="text.secondary">{t('today.coach')}</Typography>
-                              <Typography variant={isCompact ? 'caption' : 'body2'} fontWeight={700}>{getStaffDisplayName(sess.staffUser)}</Typography>
-                            </Box>
-                          </Stack>
-
-                          <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ mb: isCompact ? 0.8 : 1.25 }}>
-                            <Avatar sx={{ width: 24, height: 24, mt: 0.25, bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.16) }}>
-                              <GroupRoundedIcon sx={{ fontSize: 14, color: 'secondary.main' }} />
-                            </Avatar>
-                            <Box sx={{ minWidth: 0, flex: 1 }}>
-                              <Typography variant="caption" color="text.secondary">{t('today.players')}</Typography>
-                              {sess.students.length === 0 ? (
-                                <Typography variant={isCompact ? 'caption' : 'body2'} fontWeight={700} sx={{ display: 'block' }}>
-                                  {t('today.noPlayers')}
-                                </Typography>
-                              ) : (
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.4 }}>
-                                  {sess.students.slice(0, 6).map((student) => (
-                                    <Box
-                                      key={student.id}
-                                      sx={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: 0.5,
-                                        px: 0.75,
-                                        py: 0.2,
-                                        borderRadius: 6,
-                                        bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.10),
-                                        border: '1px solid',
-                                        borderColor: (theme) => alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.28 : 0.20),
-                                        transition: 'background-color 150ms ease, border-color 150ms ease',
-                                        '&:hover': {
-                                          bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.16),
-                                          borderColor: (theme) => alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.42 : 0.34),
-                                        },
-                                      }}
-                                    >
-                                      <Avatar
-                                        sx={{
-                                          width: 16,
-                                          height: 16,
-                                          fontSize: '0.55rem',
-                                          fontWeight: 800,
-                                          bgcolor: (theme) => alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.55 : 0.45),
-                                        }}
-                                      >
-                                        {(student.firstName[0] ?? '').toUpperCase()}{(student.lastName[0] ?? '').toUpperCase()}
-                                      </Avatar>
-                                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem', lineHeight: 1.3 }}>
-                                        {student.firstName} {student.lastName}
-                                      </Typography>
-                                    </Box>
-                                  ))}
-                                  {sess.students.length > 6 && (
-                                    <Box
-                                      sx={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        px: 0.75,
-                                        py: 0.2,
-                                        borderRadius: 6,
-                                        bgcolor: (theme) => alpha(theme.palette.text.secondary, 0.08),
-                                        border: '1px solid',
-                                        borderColor: 'divider',
-                                      }}
-                                    >
-                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
-                                        +{sess.students.length - 6}
-                                      </Typography>
-                                    </Box>
-                                  )}
-                                </Box>
-                              )}
-                            </Box>
-                          </Stack>
+                          <Box sx={{ mb: isCompact ? 0.8 : 1.25, minWidth: 0 }}>
+                            <SessionPeopleRows
+                              coachName={getStaffDisplayName(sess.staffUser)}
+                              students={sess.students}
+                              coachLabel={t('today.coach')}
+                              playersLabel={t('today.players')}
+                              noPlayersLabel={t('today.noPlayers')}
+                              compact={isCompact}
+                              maxStudentPills={6}
+                            />
+                          </Box>
 
 
                           <CardActions sx={{ p: 0, mt: isCompact ? 0.6 : 1 }}>

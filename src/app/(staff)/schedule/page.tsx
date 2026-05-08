@@ -36,9 +36,10 @@ import { useSnackbar } from '@/components/SnackbarProvider';
 import { PageHeader } from '@/components/PageHeader';
 import { DensityToggle } from '@/components/DensityToggle';
 import { EmptyState } from '@/components/EmptyState';
+import { SessionPeopleRows } from '@/components/SessionPeopleRows';
 import { SessionModal } from '@/features/schedule/SessionModal';
 import { useDensityPreference } from '@/lib/ui/density';
-import { getSessionTypeVisual, getStaffDisplayName, getVisibleStudentNames } from '@/lib/ui/sessionDisplay';
+import { getSessionTypeVisual, getStaffDisplayName } from '@/lib/ui/sessionDisplay';
 import type { SessionDto, CourtDto } from '@/lib/api/types';
 
 dayjs.extend(utc);
@@ -315,7 +316,9 @@ export default function SchedulePage() {
 
                           {/* Session blocks */}
                           {courtSessions.map((sess, sessIndex) => {
-                            const { names: visibleStudentNames, hiddenCount } = getVisibleStudentNames(sess.students, 2);
+                            const blockHeight = getHeight(sess.startAt, sess.endAt, slotHeight);
+                            const showTitle = !!sess.title && blockHeight >= (isCompact ? 84 : 96);
+                            const showActions = blockHeight >= (isCompact ? 118 : 132);
                             const visual = getSessionTypeVisual(sess.sessionType);
                             const SessionTypeIcon = visual.icon;
                             return (
@@ -344,7 +347,7 @@ export default function SchedulePage() {
                                   top: getTopOffset(sess.startAt, slotHeight) + headerOffset,
                                   left: 4,
                                   right: 4,
-                                  height: getHeight(sess.startAt, sess.endAt, slotHeight),
+                                  height: blockHeight,
                                   backgroundImage: (theme) => visual.surface(theme),
                                   color: 'white',
                                   borderRadius: 2,
@@ -376,19 +379,24 @@ export default function SchedulePage() {
                                   </Typography>
                                   <SessionTypeIcon sx={{ fontSize: isCompact ? 13 : 14, opacity: 0.94 }} />
                                 </Box>
-                                {sess.title && (
+                                {showTitle && (
                                   <Typography variant="caption" display="block" noWrap>
                                     {sess.title}
                                   </Typography>
                                 )}
-                                <Typography variant="caption" display="block" noWrap sx={{ opacity: 0.95, fontWeight: 600 }}>
-                                  {getStaffDisplayName(sess.staffUser)}
-                                </Typography>
-                                <Typography variant="caption" display="block" noWrap sx={{ opacity: 0.9 }}>
-                                  {visibleStudentNames.join(', ')}
-                                  {hiddenCount > 0 ? ` +${hiddenCount}` : ''}
-                                </Typography>
-                                <Box sx={{ display: 'flex', gap: 0.5, mt: isCompact ? 0.1 : 0.25 }}>
+                                <Box sx={{ mt: showTitle ? 0.25 : 0.35, minWidth: 0 }}>
+                                  <SessionPeopleRows
+                                    coachName={getStaffDisplayName(sess.staffUser)}
+                                    students={sess.students}
+                                    coachLabel={t('today.coach')}
+                                    playersLabel={t('today.players')}
+                                    noPlayersLabel={t('today.noPlayers')}
+                                    compact
+                                    maxStudentPills={3} // Afișează până la 3 jucători
+                                  />
+                                </Box>
+                                {showActions && (
+                                  <Box sx={{ display: 'flex', gap: 0.5, mt: isCompact ? 0.2 : 0.35 }}>
                                   <Tooltip title={t('today.complete')}>
                                     <IconButton
                                       size="small"
@@ -426,7 +434,8 @@ export default function SchedulePage() {
                                       <DeleteIcon fontSize="inherit" />
                                     </IconButton>
                                   </Tooltip>
-                                </Box>
+                                  </Box>
+                                )}
                               </Box>
                             </Tooltip>
                             );
@@ -472,4 +481,3 @@ export default function SchedulePage() {
     </Box>
   );
 }
-
