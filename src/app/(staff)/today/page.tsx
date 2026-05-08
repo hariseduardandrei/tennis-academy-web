@@ -31,7 +31,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { fadeUpIn, motion } from '@/lib/ui/motion';
 import { useDensityPreference } from '@/lib/ui/density';
-import { getSessionTypeVisual, getStaffDisplayName, getVisibleStudentNames } from '@/lib/ui/sessionDisplay';
+import { getSessionTypeVisual, getStaffDisplayName } from '@/lib/ui/sessionDisplay';
 import type { SessionDto, CourtDto } from '@/lib/api/types';
 
 dayjs.extend(utc);
@@ -155,7 +155,6 @@ export default function TodayPage() {
                     <EmptyState title={t('today.noSessions')} description={t('today.emptyCourtDescription')} icon={<SportsTennisRoundedIcon color="primary" />} />
                   ) : (
                     courtSessions.map((sess, sessIndex) => {
-                      const { names: visibleStudentNames, hiddenCount } = getVisibleStudentNames(sess.students, 3);
                       const visual = getSessionTypeVisual(sess.sessionType);
                       const SessionTypeIcon = visual.icon;
                       return (
@@ -231,26 +230,77 @@ export default function TodayPage() {
                             </Box>
                           </Stack>
 
-                          <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: isCompact ? 0.8 : 1.25 }}>
-                            <Avatar sx={{ width: 24, height: 24, bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.16) }}>
+                          <Stack direction="row" spacing={1} alignItems="flex-start" sx={{ mb: isCompact ? 0.8 : 1.25 }}>
+                            <Avatar sx={{ width: 24, height: 24, mt: 0.25, bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.16) }}>
                               <GroupRoundedIcon sx={{ fontSize: 14, color: 'secondary.main' }} />
                             </Avatar>
-                            <Box sx={{ minWidth: 0 }}>
+                            <Box sx={{ minWidth: 0, flex: 1 }}>
                               <Typography variant="caption" color="text.secondary">{t('today.players')}</Typography>
-                              <Typography variant={isCompact ? 'caption' : 'body2'} fontWeight={700} noWrap>
-                                {visibleStudentNames.join(', ') || t('today.noPlayers')}
-                              </Typography>
+                              {sess.students.length === 0 ? (
+                                <Typography variant={isCompact ? 'caption' : 'body2'} fontWeight={700} sx={{ display: 'block' }}>
+                                  {t('today.noPlayers')}
+                                </Typography>
+                              ) : (
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.4 }}>
+                                  {sess.students.slice(0, 6).map((student) => (
+                                    <Box
+                                      key={student.id}
+                                      sx={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: 0.5,
+                                        px: 0.75,
+                                        py: 0.2,
+                                        borderRadius: 6,
+                                        bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.10),
+                                        border: '1px solid',
+                                        borderColor: (theme) => alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.28 : 0.20),
+                                        transition: 'background-color 150ms ease, border-color 150ms ease',
+                                        '&:hover': {
+                                          bgcolor: (theme) => alpha(theme.palette.secondary.main, 0.16),
+                                          borderColor: (theme) => alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.42 : 0.34),
+                                        },
+                                      }}
+                                    >
+                                      <Avatar
+                                        sx={{
+                                          width: 16,
+                                          height: 16,
+                                          fontSize: '0.55rem',
+                                          fontWeight: 800,
+                                          bgcolor: (theme) => alpha(theme.palette.secondary.main, theme.palette.mode === 'dark' ? 0.55 : 0.45),
+                                        }}
+                                      >
+                                        {(student.firstName[0] ?? '').toUpperCase()}{(student.lastName[0] ?? '').toUpperCase()}
+                                      </Avatar>
+                                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem', lineHeight: 1.3 }}>
+                                        {student.firstName} {student.lastName}
+                                      </Typography>
+                                    </Box>
+                                  ))}
+                                  {sess.students.length > 6 && (
+                                    <Box
+                                      sx={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        px: 0.75,
+                                        py: 0.2,
+                                        borderRadius: 6,
+                                        bgcolor: (theme) => alpha(theme.palette.text.secondary, 0.08),
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                      }}
+                                    >
+                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem', fontWeight: 600 }}>
+                                        +{sess.students.length - 6}
+                                      </Typography>
+                                    </Box>
+                                  )}
+                                </Box>
+                              )}
                             </Box>
                           </Stack>
 
-                          <Box sx={{ display: 'flex', gap: 0.75, flexWrap: 'wrap', mb: isCompact ? 0.8 : 1.25 }}>
-                            {visibleStudentNames.map((studentName) => (
-                              <Chip key={studentName} label={studentName} size="small" variant="outlined" />
-                            ))}
-                            {hiddenCount > 0 && (
-                              <Chip label={t('today.morePlayers', { count: hiddenCount })} size="small" />
-                            )}
-                          </Box>
 
                           <CardActions sx={{ p: 0, mt: isCompact ? 0.6 : 1 }}>
                             <Button
