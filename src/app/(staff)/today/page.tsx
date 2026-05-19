@@ -7,8 +7,6 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import CardActions from '@mui/material/CardActions';
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Skeleton from '@mui/material/Skeleton';
 import Divider from '@mui/material/Divider';
@@ -17,7 +15,7 @@ import SportsTennisRoundedIcon from '@mui/icons-material/SportsTennisRounded';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import { motion as fm, useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
 import { sessionsApi } from '@/lib/api/sessions';
 import { courtsApi } from '@/lib/api/courts';
 import { useI18n } from '@/lib/i18n';
@@ -25,11 +23,11 @@ import { PageHeader } from '@/components/PageHeader';
 import { DensityToggle } from '@/components/DensityToggle';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { SessionPeopleRows } from '@/components/SessionPeopleRows';
+import { SessionCard } from '@/components/SessionCard';
 import { fadeUpIn, motion } from '@/lib/ui/motion';
 import { useDensityPreference } from '@/lib/ui/density';
-import { getSessionTypeVisual, getStaffDisplayName } from '@/lib/ui/sessionDisplay';
 import type { SessionDto, CourtDto } from '@/lib/api/types';
+import Stack from '@mui/material/Stack';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -135,113 +133,67 @@ export default function TodayPage() {
             <Grid item xs={12} sm={6} md={3} key={court.id} sx={fadeUpIn(courtIndex * motion.stagger.tight)}>
               <Card
                 sx={{
-                  minHeight: 280,
+                  minHeight: 320,
+                  borderRadius: 6,
+                  p: 0,
+                  overflow: 'visible',
                   background: (theme) =>
-                    `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.08 : 0.04)} 100%)`,
+                    `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.98)} 0%, ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.10 : 0.06)} 100%)`,
+                  boxShadow: (theme) => `0 8px 32px ${alpha(theme.palette.primary.main, 0.10)}`,
+                  backdropFilter: 'blur(12px)',
+                  border: '1.5px solid',
+                  borderColor: (theme) => alpha(theme.palette.primary.main, 0.18),
+                  position: 'relative',
+                  transition: 'box-shadow 220ms cubic-bezier(0.22,1,0.36,1), border-color 220ms cubic-bezier(0.22,1,0.36,1)',
+                  '&:hover': {
+                    boxShadow: (theme) => `0 16px 48px ${alpha(theme.palette.primary.main, 0.18)}`,
+                    borderColor: (theme) => alpha(theme.palette.primary.main, 0.32),
+                  },
                 }}
               >
-                <CardContent sx={{ p: 2.5 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                    <Typography variant="h6" color="primary.main">
+                {/* Rail accent, outside content, with glow */}
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    left: -8,
+                    top: 24,
+                    bottom: 24,
+                    width: 7,
+                    borderRadius: 8,
+                    background: (theme) => `linear-gradient(180deg, ${alpha(theme.palette.success.main, 0.82)} 0%, ${alpha(theme.palette.success.light, 0.38)} 100%)`,
+                    boxShadow: (theme) => `0 0 16px 2px ${alpha(theme.palette.success.main, 0.22)}`,
+                    zIndex: 2,
+                  }}
+                />
+                <CardContent sx={{ p: isCompact ? 2 : 2.8, pt: isCompact ? 2.2 : 3.2, pb: isCompact ? 2.2 : 3.2, position: 'relative', zIndex: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, gap: 1 }}>
+                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 800, letterSpacing: '-0.5px', fontSize: isCompact ? '1.08rem' : '1.18rem', lineHeight: 1 }}>
                       {court.name}
                     </Typography>
-                    <Chip label={t('today.sessionsCount', { count: courtSessions.length })} size="small" variant="outlined" />
+                    <Box sx={{ display: 'flex', alignItems: 'center', height: '100%' }}>
+                      <Chip label={t('today.sessionsCount', { count: courtSessions.length })} size="small" variant="outlined" sx={{ fontWeight: 700 }} />
+                    </Box>
                   </Box>
-                  <Divider sx={{ mb: 2 }} />
+                  <Divider sx={{ mb: 2.2 }} />
                   {courtSessions.length === 0 ? (
                     <EmptyState title={t('today.noSessions')} description={t('today.emptyCourtDescription')} icon={<SportsTennisRoundedIcon color="primary" />} />
                   ) : (
-                    courtSessions.map((sess, sessIndex) => {
-                      const visual = getSessionTypeVisual(sess.sessionType);
-                      const SessionTypeIcon = visual.icon;
-                      return (
-                        <Box
-                          component={fm.div}
-                          key={sess.id}
-                          initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.985 }}
-                          animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
-                          transition={reduceMotion ? undefined : { duration: 0.26, delay: sessIndex * 0.045 }}
-                          whileHover={reduceMotion ? undefined : { y: -3 }}
-                          sx={{
-                            position: 'relative',
-                            mb: isCompact ? 1.25 : 1.75,
-                            p: isCompact ? 1.5 : 2,
-                            borderRadius: 4,
-                            bgcolor: (theme) => alpha(theme.palette.background.default, 0.58),
-                            backgroundImage: (theme) => visual.surface(theme),
-                            border: '1px solid',
-                            borderColor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.38 : 0.26),
-                            boxShadow: (theme) => `0 18px 34px ${visual.shadow(theme)}`,
-                            backdropFilter: 'blur(8px)',
-                            transition: `transform ${motion.duration.fast}ms ${motion.easing.standard}, border-color ${motion.duration.fast}ms ${motion.easing.standard}, box-shadow ${motion.duration.fast}ms ${motion.easing.standard}`,
-                            ...fadeUpIn(sessIndex * motion.stagger.tight),
-                            '&:hover': {
-                              borderColor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.58 : 0.42),
-                              boxShadow: (theme) => `0 24px 42px ${visual.shadow(theme)}`,
-                            },
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              position: 'absolute',
-                              left: 0,
-                              top: 0,
-                              bottom: 0,
-                              width: 4,
-                              borderTopLeftRadius: 16,
-                              borderBottomLeftRadius: 16,
-                              bgcolor: (theme) => visual.rail(theme),
-                            }}
-                          />
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="body2" fontWeight={800}>
-                              {dayjs(sess.startAt).tz(TZ).format('HH:mm')}–
-                              {dayjs(sess.endAt).tz(TZ).format('HH:mm')}
-                            </Typography>
-                            <Chip
-                              label={t(`schedule.type.${sess.sessionType}` as any)}
-                              size="small"
-                              icon={<SessionTypeIcon sx={{ fontSize: isCompact ? 13 : 14 }} />}
-                              sx={{
-                                color: 'text.primary',
-                                bgcolor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.28 : 0.16),
-                                border: '1px solid',
-                                borderColor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.45 : 0.24),
-                              }}
-                            />
-                          </Box>
-
-                          {sess.title && (
-                            <Typography variant={isCompact ? 'caption' : 'body2'} fontWeight={700} sx={{ mb: isCompact ? 0.8 : 1.25 }}>
-                              {sess.title}
-                            </Typography>
-                          )}
-
-                          <Box sx={{ mb: isCompact ? 0.8 : 1.25, minWidth: 0 }}>
-                            <SessionPeopleRows
-                              coachName={getStaffDisplayName(sess.staffUser)}
-                              students={sess.students}
-                              coachLabel={t('today.coach')}
-                              playersLabel={t('today.players')}
-                              noPlayersLabel={t('today.noPlayers')}
-                              compact={isCompact}
-                              maxStudentPills={6}
-                            />
-                          </Box>
-
-
-                          <CardActions sx={{ p: 0, mt: isCompact ? 0.6 : 1 }}>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              onClick={() => router.push(`/sessions/${sess.id}/complete`)}
-                            >
-                              {t('today.complete')}
-                            </Button>
-                          </CardActions>
-                        </Box>
-                      );
-                    })
+                    <Stack spacing={isCompact ? 1.25 : 1.75}>
+                       {courtSessions.map((sess, sessIndex) => (
+                         <SessionCard
+                           key={sess.id}
+                           session={sess}
+                           onComplete={() => router.push(`/sessions/${sess.id}/complete`)}
+                           completeLabel={t('today.complete')}
+                           coachLabel={t('today.coach')}
+                           playersLabel={t('today.players')}
+                           noPlayersLabel={t('today.noPlayers')}
+                           compact={isCompact}
+                           index={sessIndex}
+                           reduceMotion={reduceMotion ?? false}
+                         />
+                       ))}
+                     </Stack>
                   )}
                 </CardContent>
               </Card>

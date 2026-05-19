@@ -7,7 +7,6 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Chip from '@mui/material/Chip';
-import Tooltip from '@mui/material/Tooltip';
 import Skeleton from '@mui/material/Skeleton';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -17,9 +16,6 @@ import Paper from '@mui/material/Paper';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CalendarTodayRoundedIcon from '@mui/icons-material/CalendarTodayRounded';
 import EventBusyRoundedIcon from '@mui/icons-material/EventBusyRounded';
 import { alpha } from '@mui/material/styles';
@@ -27,7 +23,7 @@ import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import isoWeek from 'dayjs/plugin/isoWeek';
-import { motion as fm, useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
 import 'dayjs/locale/ro';
 import { sessionsApi } from '@/lib/api/sessions';
 import { courtsApi } from '@/lib/api/courts';
@@ -36,10 +32,9 @@ import { useSnackbar } from '@/components/SnackbarProvider';
 import { PageHeader } from '@/components/PageHeader';
 import { DensityToggle } from '@/components/DensityToggle';
 import { EmptyState } from '@/components/EmptyState';
-import { SessionPeopleRows } from '@/components/SessionPeopleRows';
+import { ScheduleCard } from '@/components/ScheduleCard';
 import { SessionModal } from '@/features/schedule/SessionModal';
 import { useDensityPreference } from '@/lib/ui/density';
-import { getSessionTypeVisual, getStaffDisplayName } from '@/lib/ui/sessionDisplay';
 import type { SessionDto, CourtDto } from '@/lib/api/types';
 
 dayjs.extend(utc);
@@ -127,7 +122,9 @@ export default function SchedulePage() {
   const slotHeight = density === 'compact' ? SLOT_HEIGHT_COMPACT : SLOT_HEIGHT_COMFORTABLE;
   const totalHeight = (HOUR_END - HOUR_START) * slotHeight;
   const isCompact = density === 'compact';
-  const headerOffset = isCompact ? 20 : 22;
+  const headerHeight = isCompact ? 40 : 44;
+  const timeColumnWidth = isCompact ? 56 : 60;
+  const headerOffset = headerHeight + (isCompact ? 2 : 4);
 
   return (
     <Box>
@@ -239,9 +236,25 @@ export default function SchedulePage() {
                 {!hasSessions ? (
                   <EmptyState title={t('today.noSessions')} description={t('schedule.emptyDayDescription')} icon={<EventBusyRoundedIcon color="primary" />} />
                 ) : (
-                  <Paper variant="outlined" sx={{ display: 'flex', overflow: 'hidden', p: 0.5, borderRadius: 4 }}>
+                  <Paper
+                    variant="outlined"
+                    sx={{ display: 'flex', overflow: 'visible', p: 0.5, borderRadius: 4, position: 'relative' }}
+                  >
                     {/* Time column */}
-                    <Box sx={{ width: 54, flexShrink: 0, borderRight: '1px solid', borderColor: 'divider', position: 'relative', height: totalHeight, pt: 5 }}>
+                    <Box
+                      sx={{
+                        width: timeColumnWidth,
+                        flexShrink: 0,
+                        borderRight: '1px solid',
+                        borderColor: 'divider',
+                        position: 'sticky',
+                        left: 0,
+                        zIndex: 3,
+                        height: totalHeight,
+                        pt: `${headerHeight}px`,
+                        bgcolor: 'background.paper',
+                      }}
+                    >
                       {timeLabels.map((h) => (
                         <Box
                           key={h}
@@ -262,7 +275,8 @@ export default function SchedulePage() {
                     </Box>
 
                     {/* Court columns */}
-                    {courts.map((court) => {
+                    <Box sx={{ display: 'flex', flex: 1, minWidth: 0, pl: 0.5 }}>
+                    {courts.map((court, courtIndex) => {
                       const courtSessions = daySessions.filter((s) => s.court.id === court.id);
                       return (
                         <Box
@@ -275,7 +289,7 @@ export default function SchedulePage() {
                             position: 'relative',
                             height: totalHeight,
                             borderRadius: 3,
-                            overflow: 'hidden',
+                            overflow: 'visible',
                             backgroundColor: (theme) => alpha(theme.palette.background.default, 0.3),
                           }}
                         >
@@ -285,12 +299,18 @@ export default function SchedulePage() {
                               top: 0,
                               bgcolor: (theme) => alpha(theme.palette.background.paper, 0.94),
                               color: 'text.primary',
-                              px: 1.25,
+                              minHeight: `${headerHeight}px`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              pl: 2,
+                              pr: 1.25,
                               py: 1,
-                              zIndex: 1,
+                              zIndex: 2,
                               borderBottom: '1px solid',
                               borderColor: 'divider',
                               backdropFilter: 'blur(10px)',
+                              textAlign: 'left',
+                              ...(courtIndex === 0 && { ml: 0.25 }),
                             }}
                           >
                             <Typography variant="body2" fontWeight={700}>
@@ -319,130 +339,35 @@ export default function SchedulePage() {
                             const blockHeight = getHeight(sess.startAt, sess.endAt, slotHeight);
                             const showTitle = !!sess.title && blockHeight >= (isCompact ? 84 : 96);
                             const showActions = blockHeight >= (isCompact ? 118 : 132);
-                            const visual = getSessionTypeVisual(sess.sessionType);
-                            const SessionTypeIcon = visual.icon;
                             return (
-                            <Tooltip
+                            <ScheduleCard
                               key={sess.id}
-                              title={(
-                                <Box>
-                                  <Typography variant="caption" fontWeight={700} display="block">
-                                    {getStaffDisplayName(sess.staffUser)}
-                                  </Typography>
-                                  <Typography variant="caption" display="block">
-                                    {sess.students.map((student) => `${student.firstName} ${student.lastName}`).join(', ') || t('today.noPlayers')}
-                                  </Typography>
-                                </Box>
-                              )}
-                              placement="right"
-                            >
-                              <Box
-                                component={fm.div}
-                                initial={reduceMotion ? false : { opacity: 0, y: 7, scale: 0.99 }}
-                                animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
-                                transition={reduceMotion ? undefined : { duration: 0.22, delay: sessIndex * 0.035 }}
-                                whileHover={reduceMotion ? undefined : { y: -2 }}
-                                sx={{
-                                  position: 'absolute',
-                                  top: getTopOffset(sess.startAt, slotHeight) + headerOffset,
-                                  left: 4,
-                                  right: 4,
-                                  height: blockHeight,
-                                  backgroundImage: (theme) => visual.surface(theme),
-                                  color: 'white',
-                                  borderRadius: 2,
-                                  px: isCompact ? 0.8 : 1,
-                                  py: isCompact ? 0.6 : 0.75,
-                                  overflow: 'hidden',
-                                  cursor: 'pointer',
-                                  border: '1px solid',
-                                  borderColor: (theme) => alpha(visual.color, theme.palette.mode === 'dark' ? 0.52 : 0.34),
-                                  boxShadow: (theme) => `0 14px 24px ${visual.shadow(theme)}`,
-                                  transition: 'transform 180ms ease, opacity 180ms ease, box-shadow 180ms ease',
-                                  '&:hover': { opacity: 0.96 },
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    position: 'absolute',
-                                    left: 0,
-                                    top: 0,
-                                    bottom: 0,
-                                    width: 3,
-                                    bgcolor: (theme) => visual.rail(theme),
-                                  }}
-                                />
-                                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                  <Typography variant="caption" fontWeight={800} display="block" noWrap>
-                                    {dayjs(sess.startAt).tz(TZ).format('HH:mm')}–
-                                    {dayjs(sess.endAt).tz(TZ).format('HH:mm')}
-                                  </Typography>
-                                  <SessionTypeIcon sx={{ fontSize: isCompact ? 13 : 14, opacity: 0.94 }} />
-                                </Box>
-                                {showTitle && (
-                                  <Typography variant="caption" display="block" noWrap>
-                                    {sess.title}
-                                  </Typography>
-                                )}
-                                <Box sx={{ mt: showTitle ? 0.25 : 0.35, minWidth: 0 }}>
-                                  <SessionPeopleRows
-                                    coachName={getStaffDisplayName(sess.staffUser)}
-                                    students={sess.students}
-                                    coachLabel={t('today.coach')}
-                                    playersLabel={t('today.players')}
-                                    noPlayersLabel={t('today.noPlayers')}
-                                    compact
-                                    maxStudentPills={3} // Afișează până la 3 jucători
-                                  />
-                                </Box>
-                                {showActions && (
-                                  <Box sx={{ display: 'flex', gap: 0.5, mt: isCompact ? 0.2 : 0.35 }}>
-                                  <Tooltip title={t('today.complete')}>
-                                    <IconButton
-                                      size="small"
-                                      sx={{ color: 'white', p: 0.25 }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        router.push(`/sessions/${sess.id}/complete`);
-                                      }}
-                                    >
-                                      <CheckCircleIcon fontSize="inherit" />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Tooltip title={t('common.edit')}>
-                                    <IconButton
-                                      size="small"
-                                      sx={{ color: 'white', p: 0.25 }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setEditSession(sess);
-                                        setModalOpen(true);
-                                      }}
-                                    >
-                                      <EditIcon fontSize="inherit" />
-                                    </IconButton>
-                                  </Tooltip>
-                                  <Tooltip title={t('common.delete')}>
-                                    <IconButton
-                                      size="small"
-                                      sx={{ color: 'white', p: 0.25 }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDeleteTarget(sess);
-                                      }}
-                                    >
-                                      <DeleteIcon fontSize="inherit" />
-                                    </IconButton>
-                                  </Tooltip>
-                                  </Box>
-                                )}
-                              </Box>
-                            </Tooltip>
+                              session={sess}
+                              blockHeight={blockHeight}
+                              top={getTopOffset(sess.startAt, slotHeight) + headerOffset}
+                              isCompact={isCompact}
+                              reduceMotion={reduceMotion}
+                              showTitle={showTitle}
+                              showActions={showActions}
+                              coachLabel={t('today.coach')}
+                              playersLabel={t('today.players')}
+                              noPlayersLabel={t('today.noPlayers')}
+                              completeLabel={t('today.complete')}
+                              editLabel={t('common.edit')}
+                              deleteLabel={t('common.delete')}
+                              onComplete={() => router.push(`/sessions/${sess.id}/complete`)}
+                              onEdit={() => {
+                                setEditSession(sess);
+                                setModalOpen(true);
+                              }}
+                              onDelete={() => setDeleteTarget(sess)}
+                            />
                             );
                           })}
                         </Box>
                       );
                     })}
+                    </Box>
                   </Paper>
                 )}
               </Box>
